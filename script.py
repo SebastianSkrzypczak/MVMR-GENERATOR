@@ -3,9 +3,11 @@ from calendar import monthrange
 import random
 from operator import attrgetter
 from datetime import datetime
+from tabulate import tabulate
 
 
-def Dest(destinations): # A function to read data from .txt file and store it in destination list 
+
+def dest(destinations): # A function to read data from .txt file and store it in destination list
     dest_tuple = namedtuple( #creating a namedtuple to store data in fixed order
         'destination',
         ['name', 'location', 'distance']
@@ -18,10 +20,9 @@ def Dest(destinations): # A function to read data from .txt file and store it in
         dest_list.append(temp_line) 
     del dest_list[0]
     return dest_list
-    #test
 
 
-def Fuel(refuelings): # A function to store all refuelings 
+def fuel(refuelings): # A function to store all refuelings 
     fuel_tuple = namedtuple( # creating a namedtuple to store all informations about refuleing in fixed order
         'refueling',
         ['date', 'volume', 'name']
@@ -34,7 +35,7 @@ def Fuel(refuelings): # A function to store all refuelings
         fuel_list.append(temp_line) 
     return sorted(fuel_list, key=attrgetter('date'))
 
-def Recalculate(trips_list, prev_milage):
+def recalculate(trips_list, prev_milage):
     trips_tuple = namedtuple(
         'trip',
         ['date', 'name', 'distance', 'location', 'milage_now']
@@ -52,7 +53,7 @@ def Recalculate(trips_list, prev_milage):
         trip_recalc.append(temp)
     return trip_recalc
 
-def Trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_days): # A function to generate list of all trips in given month
+def trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_days): # A function to generate list of all trips in given month
     trips_tuple = namedtuple(
         'trip',
         ['date', 'name', 'distance', 'location', 'milage_now']
@@ -68,9 +69,9 @@ def Trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_d
         used_range = 0
         trips_list = []
         for fuel_tuple in fuel_list:
-            fuel_name = fuel_tuple.dest_id
+            fuel_name = fuel_tuple.name
             try:
-                temp_destination = (dest for dest in dest_list if dest.id == fuel_name)
+                temp_destination = (dest for dest in dest_list if dest.name == fuel_name)
                 next_destination = next(temp_destination)
                 temp_name = next_destination.name
                 temp_distance = next_destination.distance
@@ -125,19 +126,47 @@ def Trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_d
     trips_sorted = sorted(trips_list, key=attrgetter('date'))
     return(recalculate(trips_sorted, prev_milage), used_range, iteration)
 
-                    
-def Main():
-    destinations = open("DESTINATIONS.txt", "r", encoding="utf8")
-    refuelings = open("D:\Prywatne\VSC\MVMR-GENERATOR\MVMR-GENERATOR\MVMR\dest_display\REFUELINGS.txt", "r", encoding="utf8")
-    dest_list = Dest(destinations)
-    fuel_list = Fuel(refuelings)
-    prev_milage = 249897
-    current_milage = 251860
+
+def open_with_error_check(file_name):
+    try:
+        file = open("DESTINATIONS.TXT", "r", encoding="utf8")
+    except FileNotFoundError:
+        print(f'File {file_name} not found')
+        return False
+    except IOError:
+        print(f'Error reading the {file_name} file')
+        return False
+    return file
+
+def get_milage(prev_milage, message):
+    while True:
+        try:
+            milage = int(input(f'Type milage from {message} month: ')) # 249897
+            if milage <= 0:
+                raise ValueError("Input must be a positive integer")
+            if milage <= prev_milage:
+                raise ValueError("Input must be larger that previous milage")
+            return milage
+        except TypeError as error:
+            print(f'Type error: {error}')  
+        except ValueError as error:
+            print(f'Value error: {error}')
+
+
+def main():
+    prev_milage = get_milage(0, 'previous')
+    current_milage = get_milage(prev_milage, 'current')
+    destinations = open_with_error_check("DESTINATIONS.txt")
+    refuelings = open_with_error_check("REFUELINGS.txt")
+    dest_list = dest(destinations)
+    fuel_list = fuel(refuelings)
     month = 4
     year = 2023
-    trips_, range_, iteration_ = Trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_days=[])
-    for line in trips_:
-        print(line.date + '         ' +  line.name + '         ' +  str(line.distance) +  '         ' +  str(line.location) + '         ' +  line.milage_now)
+    trips_, range_, iteration_ = trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_days=[])
+    #print('DATE' + '         ' + 'NAME' + '         ' +  'DISTANCE' +  '         ' +  'LOCATION' + '         ' +  'MILAGE')
+    #for line in trips_:
+        #print(line.date + '         ' +  line.name + '         ' +  str(line.distance) +  '         ' +  str(line.location) + '         ' +  line.milage_now)
+    print(tabulate(trips_))
     print(range_)
     print(iteration_)
     destinations.close()
@@ -145,4 +174,4 @@ def Main():
 
 
 if __name__ == "__main__":
-    Main()
+    main()
