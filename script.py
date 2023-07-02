@@ -162,13 +162,21 @@ def main():
     fuel_list = fuel(refuelings)
     month = 4
     year = 2023
-    trips_, range_, iteration_ = trips(dest_list, fuel_list, prev_milage, current_milage, month, year, free_days=[])
-    #print('DATE' + '         ' + 'NAME' + '         ' +  'DISTANCE' +  '         ' +  'LOCATION' + '         ' +  'MILAGE')
-    #for line in trips_:
-        #print(line.date + '         ' +  line.name + '         ' +  str(line.distance) +  '         ' +  str(line.location) + '         ' +  line.milage_now)
-    print(tabulate(trips_))
-    print(range_)
-    print(iteration_)
+    trips_, range_, iteration_ = trips(
+        dest_list,
+        fuel_list,
+        prev_milage,
+        current_milage,
+        month, year,
+        free_days=[]
+        )
+    print(tabulate(
+        trips_, 
+        headers=["DATE", "NAME", "DISTANCE", "LOCATION", "MILAGE"],
+        tablefmt="grid"
+        ))
+    print(f'range {range_}')
+    print(f'iteration {iteration_}')
     destinations.close()
     refuelings.close()
 
