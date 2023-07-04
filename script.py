@@ -5,28 +5,116 @@ from tabulate import tabulate
 import random
 
 
-def dest(destinations):
-    '''
-    This function gest list of strings and rewrites it as list of namedtupes
-    ordered by distance.
-    '''
-    dest_tuple = namedtuple(
-        'destination',
-        ['name', 'location', 'distance']
-    )
-    dest_list = []
-    for line in destinations:
-        line = line[:-1]  # Deleting "/n"
-        separated = line.split("	")
-        temp_line = dest_tuple(separated[1], separated[2], separated[3])
-        dest_list.append(temp_line)
-    del dest_list[0]  # Deleting headers
-    return sorted(dest_list, key=attrgetter("distance"), reverse=True)
+class FileManager:
+    def __init__(self, file_name):
+        self.file_name = file_name
+
+    def read_with_error_check(self, file_name):
+        '''
+        A function that:
+        -> opens file with given name,
+        -> checks if errors ocured,
+        -> rewrites it to new variable,
+        -> closes the original file,
+        -> returns output as list of strings:
+        (one string is one line from base file)
+        '''
+        try:
+            file = open(file_name, "r", encoding="utf8")
+        except FileNotFoundError:
+            print(f'File {file_name} not found')
+            return False
+        except IOError:
+            print(f'Error reading the {file_name} file')
+            return False
+        output = []
+        for line in file:
+            output.append(line)
+        file.close()
+        return output
+
+    def write_with_error_check(self, file_name, data):
+        '''
+        A function that:
+        -> opens file with given name,
+        -> check if errors ocured,
+        -> writes given data line by line,
+        -> closes the original file.
+        '''
+        try:
+            file = open(file_name, "a", encoding="utf8")
+        except FileNotFoundError:
+            print(f'File {file_name} not found')
+            return False
+        except IOError:
+            print(f'Error reading the {file_name} file')
+            return False
+        for line in data:
+            file.write(f'{line}/n')
+        file.close()
+        return
+
+
+class DestinationManager:
+    def __init__(self, filename, destinations):
+        self.filename = filename
+        self.destinations = destinations
+
+    def read(self):
+        '''
+        This function gest list of strings and rewrites it
+        as list of namedtupes ordered by distance.
+        '''
+        destination_tuple = namedtuple(
+            'destination',
+            ['name', 'location', 'distance']
+        )
+        destination_list = []
+        for line in self.destinations:
+            line = line[:-1]  # Deleting "/n"
+            separated = line.split("	")
+            temp_line = destination_tuple(separated[1], separated[2], separated[3])
+            destination_list.append(temp_line)
+        del destination_list[0]  # Deleting headers
+        return sorted(destination_list, key=attrgetter("distance"), reverse=True)
+
+    def write(self):
+        '''
+        This function takes data about new destiantion
+        from user and writes it to a destination list
+        '''
+        destination_tuple = namedtuple(
+            'destination',
+            ['name', 'location', 'distance']
+        )
+        new_destination_name = input("Type new destination's name: ")
+        new_destination_location = input("Type new destination's location: ")
+        while True:
+            new_destination_distance = input("Type new destination's distance: ")
+            if (new_destination_distance.isdigit()
+                    and int(new_destination_distance) > 0
+                    and int(new_destination_distance) < 10000):
+                break
+            else:
+                print("Distance must be an integer between 0 and 10000")
+        new_destination = destination_tuple(
+            new_destination_name,
+            new_destination_location,
+            new_destination_distance
+            )
+        destination_list = self.destinations
+        destination_list.append(new_destination)
+        self.destinations = sorted(
+            destination_list,
+            key=attrgetter("distance"),
+            reverse=True
+            )
+        return
 
 
 def fuel(refuelings):
     '''
-    This function gest list of strings and rewrites it as list of namedtupes
+    This function gest list of strings and rewrites it as a list of namedtupes
     sorted by dates of refueling.
     '''
     fuel_tuple = namedtuple(
@@ -38,7 +126,7 @@ def fuel(refuelings):
         line = line[:-1]  # deleting "/n"
         separated = line.split("	")
         temp_line = fuel_tuple(separated[0], separated[1], separated[2])
-        fuel_list.append(temp_line) 
+        fuel_list.append(temp_line)
     return sorted(fuel_list, key=attrgetter('date'))
 
 
@@ -75,7 +163,14 @@ def trips(
         month, year, free_days
         ):
     '''
-    pass
+    In this function a milage records table is beeing generated.
+    The function takes following arguments:
+    -> dest_list - a list od destinations read in dest(),
+    -> fuel_list - a list of refuelings read in fuel(),
+    -> prev_milage - milage from last month,
+    -> current_milage,
+    -> month,
+    -> year.
     '''
     trips_tuple = namedtuple(
         'trip',
@@ -113,7 +208,7 @@ def trips(
                 trips_list.append(temp)
             except StopIteration:
                 continue
-        day_iteration = 0  # Safety variable to avoid too long looping 
+        day_iteration = 0  # Safety variable to avoid too long looping
         while used_range < month_range:
             if day_iteration < 30:
                 random_day = random.randrange(1, days)
@@ -136,7 +231,7 @@ def trips(
                     True
                     for trip in trips_list
                     if trip.date == random_date
-                    ]) and  # checking if generated day is allredy used in refueling
+                    ]) and  # checking if generated day is allredy used
                     not any([
                         True
                         for days in free_days
@@ -202,6 +297,9 @@ def read_with_error_check(file_name):
     return output
 
 
+
+
+
 def get_milage(prev_milage, message):
     '''
     A function that takes input with milage from user and check,
@@ -216,7 +314,7 @@ def get_milage(prev_milage, message):
                 raise ValueError("Input must be larger that previous milage")
             return milage
         except TypeError as error:
-            print(f'Type error: {error}')  
+            print(f'Type error: {error}')
         except ValueError as error:
             print(f'Value error: {error}')
 
@@ -239,7 +337,7 @@ def main():
         free_days=[]
         )
     print(tabulate(
-        trips_, 
+        trips_,
         headers=["DATE", "NAME", "DISTANCE", "LOCATION", "MILAGE"],
         tablefmt="grid"
         ))
