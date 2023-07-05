@@ -2,14 +2,16 @@ from collections import namedtuple
 from calendar import monthrange
 from operator import attrgetter
 from tabulate import tabulate
+from datetime import datetime
 import random
+
 
 
 class FileManager:
     def __init__(self, file_name):
         self.file_name = file_name
 
-    def read_with_error_check(self, file_name):
+    def read_with_error_check(self):
         '''
         A function that:
         -> opens file with given name,
@@ -20,12 +22,12 @@ class FileManager:
         (one string is one line from base file)
         '''
         try:
-            file = open(file_name, "r", encoding="utf8")
+            file = open(self.file_name, "r", encoding="utf8")
         except FileNotFoundError:
-            print(f'File {file_name} not found')
+            print(f'File {self.file_name} not found')
             return False
         except IOError:
-            print(f'Error reading the {file_name} file')
+            print(f'Error reading the {self.file_name} file')
             return False
         output = []
         for line in file:
@@ -33,7 +35,7 @@ class FileManager:
         file.close()
         return output
 
-    def write_with_error_check(self, file_name, data):
+    def write_with_error_check(self, data):
         '''
         A function that:
         -> opens file with given name,
@@ -42,12 +44,12 @@ class FileManager:
         -> closes the original file.
         '''
         try:
-            file = open(file_name, "a", encoding="utf8")
+            file = open(self.file_name, "a", encoding="utf8")
         except FileNotFoundError:
-            print(f'File {file_name} not found')
+            print(f'File {self.file_name} not found')
             return False
         except IOError:
-            print(f'Error reading the {file_name} file')
+            print(f'Error reading the {self.file_name} file')
             return False
         for line in data:
             file.write(f'{line}/n')
@@ -56,9 +58,9 @@ class FileManager:
 
 
 class DestinationManager:
-    def __init__(self, filename, destinations):
-        self.filename = filename
-        self.destinations = destinations
+    def __init__(self, file_name):
+        self.file_manger = FileManager(file_name)
+        self.destinations = self.file_manger.read_with_error_check()
 
     def read(self):
         '''
@@ -73,10 +75,18 @@ class DestinationManager:
         for line in self.destinations:
             line = line[:-1]  # Deleting "/n"
             separated = line.split("	")
-            temp_line = destination_tuple(separated[1], separated[2], separated[3])
+            temp_line = destination_tuple(
+                separated[1],
+                separated[2],
+                separated[3]
+                )
             destination_list.append(temp_line)
         del destination_list[0]  # Deleting headers
-        return sorted(destination_list, key=attrgetter("distance"), reverse=True)
+        return sorted(
+            destination_list,
+            key=attrgetter("distance"),
+            reverse=True
+            )
 
     def write(self):
         '''
@@ -90,7 +100,9 @@ class DestinationManager:
         new_destination_name = input("Type new destination's name: ")
         new_destination_location = input("Type new destination's location: ")
         while True:
-            new_destination_distance = input("Type new destination's distance: ")
+            new_destination_distance = input(
+                "Type new destination's distance: "
+                )
             if (new_destination_distance.isdigit()
                     and int(new_destination_distance) > 0
                     and int(new_destination_distance) < 10000):
@@ -112,22 +124,83 @@ class DestinationManager:
         return
 
 
-def fuel(refuelings):
-    '''
-    This function gest list of strings and rewrites it as a list of namedtupes
-    sorted by dates of refueling.
-    '''
-    fuel_tuple = namedtuple(
-        'refueling',
-        ['date', 'volume', 'name']
-    )
-    fuel_list = []
-    for line in refuelings:
-        line = line[:-1]  # deleting "/n"
-        separated = line.split("	")
-        temp_line = fuel_tuple(separated[0], separated[1], separated[2])
-        fuel_list.append(temp_line)
-    return sorted(fuel_list, key=attrgetter('date'))
+class RefuelingsManager:
+    def __init__(self, file_name, destinations):
+        self.file_manger = FileManager(file_name)
+        self.refuelings = self.file_manger.read_with_error_check()
+        self.destinations = destinations.read()
+
+    def read(self):
+        '''
+        This function gest list of strings and rewrites
+        it as a list of namedtupes
+        sorted by dates of refueling.
+        '''
+        fuel_tuple = namedtuple(
+            'refueling',
+            ['date', 'volume', 'name']
+        )
+        fuel_list = []
+        for line in self.refuelings:
+            line = line[:-1]  # deleting "/n"
+            separated = line.split("	")
+            temp_line = fuel_tuple(separated[0], separated[1], separated[2])
+            fuel_list.append(temp_line)
+        return sorted(fuel_list, key=attrgetter('date'))
+
+    def write(self):
+        '''
+        This function takes data about new refueling
+        from user and writes it to a refuelings list
+        '''
+        destination_tuple = namedtuple(
+            'refueling',
+            ['date', 'volume', 'name']
+        )
+        while True:
+            date = input(
+                "Type new refueling's date in format YYYY.MM.DD: "
+                )
+            try:
+                datetime.strptime(date, "%Y.%m.%d")
+                break
+            except ValueError:
+                print("Incorrect format of date")
+        while True:
+            volume = input(
+                "Type new refueling's volume: "
+                )
+            if (volume.isdigit()
+                    and int(volume) > 0
+                    and int(volume) < 200):
+                break
+            else:
+                print("Volume must be an integer between 0 and 200")
+        for index, destination in enumerate(self.destinations):
+            print(f'{index+1}:     {destination.name}')
+        while True:
+            name = input(
+                "Type new refueling's nearest location ID from list above: "
+                )
+            if (volume.isdigit()
+                    and int(volume) > 1
+                    and int(volume) < len(destination)):
+                break
+            else:
+                print(f'ID must be and integer' must be an integer between 0 and 200")
+        new_destination = destination_tuple(
+            new_destination_name,
+            new_destination_location,
+            new_destination_distance
+            )
+        destination_list = self.refuelings
+        destination_list.append(new_destination)
+        self.refuelings = sorted(
+            destination_list,
+            key=attrgetter("distance"),
+            reverse=True
+            )
+        return
 
 
 def recalculate(trips_list, prev_milage):
@@ -273,64 +346,57 @@ def trips(
     return recalculate(trips_sorted, prev_milage), used_range, iteration
 
 
-def read_with_error_check(file_name):
-    '''
-    A function that:
-    -> opens file with given name
-    -> rewrites it to new variable
-    -> closes the original file
-    -> returns output as list of strings:
-    (one string is one line in base file)
-    '''
-    try:
-        file = open(file_name, "r", encoding="utf8")
-    except FileNotFoundError:
-        print(f'File {file_name} not found')
-        return False
-    except IOError:
-        print(f'Error reading the {file_name} file')
-        return False
-    output = []
-    for line in file:
-        output.append(line)
-    file.close()
-    return output
+class Menu:
+    def __init__(self, destination_manager, refuelings_manger):
+        self.destination_manager = destination_manager
+        self.refuelings_manger = refuelings_manger
 
+    def get_milage(prev_milage, message):
+        '''
+        A function that takes input with milage from user and check,
+        if it meets the assumptions.
+        '''
+        while True:
+            try:
+                milage = int(input(f'Type milage from {message} month: '))
+                if milage <= 0:
+                    raise ValueError("Input must be a positive integer")
+                if milage <= prev_milage:
+                    raise ValueError(
+                        "Input must be larger that previous milage"
+                        )
+                return milage
+            except TypeError as error:
+                print(f'Type error: {error}')
+            except ValueError as error:
+                print(f'Value error: {error}')
 
+    def add_destination(self):
+        self.destination_manager.write()
 
+    def add_refueling(self):
+        self.refuelings_manger.write()
 
-
-def get_milage(prev_milage, message):
-    '''
-    A function that takes input with milage from user and check,
-    if it meets the assumptions.
-    '''
-    while True:
-        try:
-            milage = int(input(f'Type milage from {message} month: '))
-            if milage <= 0:
-                raise ValueError("Input must be a positive integer")
-            if milage <= prev_milage:
-                raise ValueError("Input must be larger that previous milage")
-            return milage
-        except TypeError as error:
-            print(f'Type error: {error}')
-        except ValueError as error:
-            print(f'Value error: {error}')
+    def date_input(self):
+        month = 0
 
 
 def main():
-    prev_milage = get_milage(0, 'previous')
-    current_milage = get_milage(prev_milage, 'current')
-    destinations = read_with_error_check("DESTINATIONS.txt")
-    refuelings = read_with_error_check("REFUELINGS.txt")
-    dest_list = dest(destinations)
-    fuel_list = fuel(refuelings)
+    destinations_manager = DestinationManager("DESTINATIONS.txt")
+    refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations_manager)
+    menu = Menu(destinations_manager, refuelings_manager)
+    refuelings_manager.write()
+
+    destinations = destinations_manager.read()
+    refuelings = refuelings_manager.read()
+    prev_milage = menu.get_milage(0, 'previous')
+    current_milage = menu.get_milage(prev_milage, 'current')
+
     month = 4
     year = 2023
     trips_, range_, iteration_ = trips(
-        dest_list,
-        fuel_list,
+        destinations,
+        refuelings,
         prev_milage,
         current_milage,
         month, year,
