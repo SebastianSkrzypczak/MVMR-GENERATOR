@@ -69,19 +69,19 @@ class DestinationManager:
         '''
         destination_tuple = namedtuple(
             'destination',
-            ['name', 'location', 'distance']
+            ['id', 'name', 'location', 'distance']
         )
         destination_list = []
         for line in self.destinations:
             line = line[:-1]  # Deleting "/n"
             separated = line.split("	")
             temp_line = destination_tuple(
+                int(separated[0]),
                 separated[1],
                 separated[2],
-                separated[3]
+                int(separated[3])
                 )
             destination_list.append(temp_line)
-        del destination_list[0]  # Deleting headers
         return sorted(
             destination_list,
             key=attrgetter("distance"),
@@ -95,8 +95,10 @@ class DestinationManager:
         '''
         destination_tuple = namedtuple(
             'destination',
-            ['name', 'location', 'distance']
+            ['id', 'name', 'location', 'distance']
         )
+        new_destination_id = self.destinations[-1].id
+        print(f'new_destination_id = {new_destination_id}')
         new_destination_name = input("Type new destination's name: ")
         new_destination_location = input("Type new destination's location: ")
         while True:
@@ -110,9 +112,10 @@ class DestinationManager:
             else:
                 print("Distance must be an integer between 0 and 10000")
         new_destination = destination_tuple(
+            int(new_destination_id),
             new_destination_name,
             new_destination_location,
-            new_destination_distance
+            int(new_destination_distance)
             )
         destination_list = self.destinations
         destination_list.append(new_destination)
@@ -128,7 +131,7 @@ class RefuelingsManager:
     def __init__(self, file_name, destinations):
         self.file_manger = FileManager(file_name)
         self.refuelings = self.file_manger.read_with_error_check()
-        self.destinations = destinations.read()
+        self.destinations = destinations
 
     def read(self):
         '''
@@ -144,7 +147,10 @@ class RefuelingsManager:
         for line in self.refuelings:
             line = line[:-1]  # deleting "/n"
             separated = line.split("	")
-            temp_line = fuel_tuple(separated[0], separated[1], separated[2])
+            temp_line = fuel_tuple(
+                separated[0],
+                int(separated[1]),
+                separated[2])
             fuel_list.append(temp_line)
         return sorted(fuel_list, key=attrgetter('date'))
 
@@ -177,21 +183,19 @@ class RefuelingsManager:
             else:
                 print("Volume must be an integer between 0 and 200")
         for index, destination in enumerate(self.destinations):
-            print(f'{index+1}:     {destination.name}')
+            print(f'{destination.id}:     {destination.name}')
         while True:
-            name = input(
+            id = input(
                 "Type new refueling's nearest location ID from list above: "
                 )
-            if (volume.isdigit()
-                    and int(volume) > 1
-                    and int(volume) < len(destination)):
+            if id > 0 and id < len(destination):
                 break
             else:
-                print(f'ID must be and integer' must be an integer between 0 and 200")
+                print('ID must be and integer')
         new_destination = destination_tuple(
-            new_destination_name,
-            new_destination_location,
-            new_destination_distance
+            date,
+            int(volume),
+            int(id)
             )
         destination_list = self.refuelings
         destination_list.append(new_destination)
@@ -383,15 +387,13 @@ class Menu:
 
 def main():
     destinations_manager = DestinationManager("DESTINATIONS.txt")
-    refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations_manager)
+    destinations = destinations_manager.read()
+    refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
     menu = Menu(destinations_manager, refuelings_manager)
     refuelings_manager.write()
-
-    destinations = destinations_manager.read()
     refuelings = refuelings_manager.read()
     prev_milage = menu.get_milage(0, 'previous')
     current_milage = menu.get_milage(prev_milage, 'current')
-
     month = 4
     year = 2023
     trips_, range_, iteration_ = trips(
