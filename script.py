@@ -158,6 +158,8 @@ class RefuelingsManager:
         This function takes data about new refueling
         from user and writes it to a refuelings list
         '''
+        formats = ["%Y.%m.%d", "%Y,%m,%d", "%Y/%m/%d", "%Y-%m-%d"]
+        none = False
         destination_tuple = namedtuple(
             'refueling',
             ['date', 'volume', 'name']
@@ -166,11 +168,17 @@ class RefuelingsManager:
             date = input(
                 "Type new refueling's date in format YYYY.MM.DD: "
                 )
-            try:
-                datetime.strptime(date, "%Y.%m.%d")
-                break
-            except ValueError:
+            for format in formats:
+                try:
+                    datetime.strptime(date, format)
+                    none = True
+                    break
+                except ValueError:
+                    pass
+            if not none:
                 print("Incorrect format of date")
+            else:
+                break
         while True:
             volume = input(
                 "Type new refueling's volume: "
@@ -187,7 +195,7 @@ class RefuelingsManager:
             id = input(
                 "Type new refueling's nearest location ID from list above: "
                 )
-            if id > 0 and id < len(destination):
+            if int(id) > 0 and int(id) < len(destination):
                 break
             else:
                 print('ID must be and integer')
