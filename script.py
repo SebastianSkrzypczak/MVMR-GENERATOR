@@ -129,7 +129,8 @@ class DestinationManager:
 class RefuelingsManager:
     def __init__(self, file_name, destinations):
         self.file_manger = FileManager(file_name)
-        self.refuelings = self.file_manger.read_with_error_check()
+        self.refuelings_raw = self.file_manger.read_with_error_check()
+        self.refuelings = self.read()
         self.destinations = destinations
 
     def read(self):
@@ -143,12 +144,13 @@ class RefuelingsManager:
             ['date', 'volume', 'name']
         )
         fuel_list = []
-        for line in self.refuelings:
+        for line in self.refuelings_raw:
             line = line[:-1]  # deleting "/n"
-            separated = line.split("	")
+            separated = line.split("\t")
+            separated[1] = separated[1].replace(",", ".")
             temp_line = fuel_tuple(
-                separated[0],
-                int(separated[1]),
+                datetime.strptime(separated[0], "%Y/%m/%d"),
+                float(separated[1]),
                 separated[2])
             fuel_list.append(temp_line)
         return sorted(fuel_list, key=attrgetter('date'))
@@ -160,7 +162,7 @@ class RefuelingsManager:
         '''
         formats = ["%Y.%m.%d", "%Y,%m,%d", "%Y/%m/%d", "%Y-%m-%d"]
         none = False
-        destination_tuple = namedtuple(
+        refueling_tuple = namedtuple(
             'refueling',
             ['date', 'volume', 'name']
         )
@@ -189,29 +191,31 @@ class RefuelingsManager:
                 break
             else:
                 print("Volume must be an integer between 0 and 200")
-        for index, destination in enumerate(self.destinations):
+        for destination in self.destinations:
             print(f'{destination.id}:     {destination.name}')
         while True:
             id = input(
                 "Type new refueling's nearest location ID from list above: "
                 )
-            if int(id) > 0 and int(id) < len(destination):
+            if int(id) > 0 and  \
+               int(id) <= len(self.destinations):
                 break
             else:
                 print('ID must be and integer')
-        new_destination = destination_tuple(
-            date,
-            int(volume),
-            int(id)
+        new_destination = refueling_tuple(
+            datetime.strptime(date, "%Y/%m/%d"),
+            float(volume),
+            self.destinations[int(id)-1].name
             )
-        destination_list = self.refuelings
-        destination_list.append(new_destination)
+        self.refuelings.append(new_destination)
         self.refuelings = sorted(
-            destination_list,
-            key=attrgetter("distance"),
-            reverse=True
+            self.refuelings,
+            key=attrgetter("date"),
+            reverse=False
             )
-        return
+        for refueling in self.refuelings:
+            print(refueling)
+        return 
 
 
 def recalculate(trips_list, prev_milage):
@@ -362,7 +366,7 @@ class Menu:
         self.destination_manager = destination_manager
         self.refuelings_manger = refuelings_manger
 
-    def get_milage(prev_milage, message):
+    def get_milage(self, prev_milage, message):
         '''
         A function that takes input with milage from user and check,
         if it meets the assumptions.
