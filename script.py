@@ -167,55 +167,69 @@ class RefuelingsManager:
             ['date', 'volume', 'name']
         )
         while True:
-            date = input(
-                "Type new refueling's date in format YYYY.MM.DD: "
-                )
-            for format in formats:
-                try:
-                    datetime.strptime(date, format)
-                    none = True
+            while True:
+                date = input(
+                    "Type new refueling's date in format YYYY.MM.DD: "
+                    )
+                for format in formats:
+                    try:
+                        datetime.strptime(date, format)
+                        none = True
+                        break
+                    except ValueError:
+                        pass
+                if not none:
+                    print("Incorrect format of date")
+                else:
                     break
-                except ValueError:
-                    pass
-            if not none:
-                print("Incorrect format of date")
-            else:
-                break
-        while True:
-            volume = input(
-                "Type new refueling's volume: "
+            while True:
+                volume = input(
+                    "Type new refueling's volume: "
+                    )
+                if (volume.isdigit()
+                        and int(volume) > 0
+                        and int(volume) < 200):
+                    break
+                else:
+                    print("Volume must be an integer between 0 and 200")
+            for destination in self.destinations:
+                print(f'{destination.id}:     {destination.name}')
+            while True:
+                id = input(
+                    "Type new refueling's nearest location ID from list above: "
+                    )
+                if int(id) > 0 and  \
+                   int(id) <= len(self.destinations):
+                    break
+                else:
+                    print('ID must be and integer')
+            new_refueling = refueling_tuple(
+                datetime.strptime(date, "%Y/%m/%d"),
+                float(volume),
+                self.destinations[int(id)-1].name
                 )
-            if (volume.isdigit()
-                    and int(volume) > 0
-                    and int(volume) < 200):
-                break
-            else:
-                print("Volume must be an integer between 0 and 200")
-        for destination in self.destinations:
-            print(f'{destination.id}:     {destination.name}')
-        while True:
-            id = input(
-                "Type new refueling's nearest location ID from list above: "
+            print(  # tabulate!
+                '\nYour new refueling: \n' +
+                f'\nDATE\t{new_refueling.date}\n' +
+                f'VOLUME\t{new_refueling.volume}\n' +
+                f'NAME\t{new_refueling.name}'
+            )
+            next = input(
+                "\nAll informations correct? If so refueling will be saved (Y/N)"
                 )
-            if int(id) > 0 and  \
-               int(id) <= len(self.destinations):
+            if next.capitalize() == "Y":
+                self.refuelings.append(new_refueling)
+                self.refuelings = sorted(
+                    self.refuelings,
+                    key=attrgetter("date"),
+                    reverse=False
+                )
+                pass  # saving to file!
                 break
-            else:
-                print('ID must be and integer')
-        new_destination = refueling_tuple(
-            datetime.strptime(date, "%Y/%m/%d"),
-            float(volume),
-            self.destinations[int(id)-1].name
-            )
-        self.refuelings.append(new_destination)
-        self.refuelings = sorted(
-            self.refuelings,
-            key=attrgetter("date"),
-            reverse=False
-            )
-        for refueling in self.refuelings:
-            print(refueling)
-        return 
+            elif next.capitalize() == "N":
+                print('\nOK, then start again.\n')
+                pass
+        return
 
 
 def recalculate(trips_list, prev_milage):
@@ -390,7 +404,9 @@ class Menu:
         self.destination_manager.write()
 
     def add_refueling(self):
-        self.refuelings_manger.write()
+        while True:
+            self.refuelings_manger.write()
+
 
     def date_input(self):
         month = 0
