@@ -3,6 +3,7 @@ from calendar import monthrange
 from operator import attrgetter
 from tabulate import tabulate
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import random
 
 
@@ -51,7 +52,7 @@ class FileManager:
             print(f'Error reading the {self.file_name} file')
             return False
         for line in data:
-            file.write(f'{line}/n')
+            file.write(f'{line}\n')
         file.close()
         return
 
@@ -157,7 +158,7 @@ class RefuelingsManager:
 
     def write(self):
         '''
-        This function takes data about new refueling
+        This function takes data about the new refueling
         from user and writes it to a refuelings list
         '''
         formats = ["%Y.%m.%d", "%Y,%m,%d", "%Y/%m/%d", "%Y-%m-%d"]
@@ -209,13 +210,15 @@ class RefuelingsManager:
                 self.destinations[int(id)-1].name
                 )
             print(  # tabulate!
-                '\nYour new refueling: \n' +
-                f'\nDATE\t{new_refueling.date}\n' +
-                f'VOLUME\t{new_refueling.volume}\n' +
-                f'NAME\t{new_refueling.name}'
-            )
+                '\nYour new refueling: \n')
+            table = [
+                ["DATE", new_refueling.date.strftime("%Y-%m-%d")],
+                ["VOLUME", new_refueling.volume],
+                ["NAME", new_refueling.name]
+            ]
+            print(tabulate(table, tablefmt="grid"))  
             next = input(
-                "\nAll informations correct? If so refueling will be saved (Y/N)"
+                "\nAll informations correct? If so refueling will be saved (Y/N)\n"
                 )
             if next.capitalize() == "Y":
                 self.refuelings.append(new_refueling)
@@ -224,7 +227,17 @@ class RefuelingsManager:
                     key=attrgetter("date"),
                     reverse=False
                 )
-                pass  # saving to file!
+                format = "%Y/%m/%d"
+                refueling_frmtd = f'{new_refueling.date.strftime(format)}\t' \
+                                  f'{new_refueling.volume}\t' \
+                                  f'{new_refueling.name}'
+                data_to_be_saved = []
+                data_to_be_saved.append(refueling_frmtd)
+                try:
+                    self.file_manger.write_with_error_check(data_to_be_saved)
+                    print("Refueling saved correctly")
+                except False:
+                    print("An error occurred")
                 break
             elif next.capitalize() == "N":
                 print('\nOK, then start again.\n')
@@ -406,10 +419,33 @@ class Menu:
     def add_refueling(self):
         while True:
             self.refuelings_manger.write()
-
+            next = input("\nDo You want to add another refueling? (Y/N)\n")
+            if next.capitalize() == "N":
+                break
 
     def date_input(self):
-        month = 0
+        today = datetime.today().replace(day=1)
+        current_month = today.strftime("%B")
+        previous_month = (today - relativedelta(days=1)).strftime("%B")
+        year = today.year
+        table = [
+            ["1.", f'{current_month} {year}'],
+            ["2.", f'{previous_month} {year}'],
+            ["3.", "Different month"],
+        ]
+        print(tabulate(table, tablefmt='grid'))
+        while True:
+            chose = input("\nWhich month do You choose? (1/2/3)\n")
+            if (chose.isdigit()
+                    and int(chose) == 1
+                    and int(chose) == 2):
+                break
+            elif (chose.isdigit()
+                    and int(chose) == 3):
+                pass  # custom date
+            else:
+                print("Chose must be an integer between 1 and 3")
+            return today.month(), today.year()
 
 
 def main():
@@ -417,7 +453,8 @@ def main():
     destinations = destinations_manager.read()
     refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
     menu = Menu(destinations_manager, refuelings_manager)
-    refuelings_manager.write()
+    month, year = menu.date_input()
+    menu.add_refueling()
     refuelings = refuelings_manager.read()
     prev_milage = menu.get_milage(0, 'previous')
     current_milage = menu.get_milage(prev_milage, 'current')
