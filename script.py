@@ -217,9 +217,15 @@ class RefuelingsManager:
                 ["NAME", new_refueling.name]
             ]
             print(tabulate(table, tablefmt="grid"))  
-            next = input(
-                "\nAll informations correct? If so refueling will be saved (Y/N)\n"
-                )
+            while True:
+                next = input(
+                    "\nAll informations correct? If so refueling will be saved (Y/N)\n"
+                    )
+                if next.capitalize() == "Y" \
+                   or next.capitalize() == "N":
+                    break
+                else:
+                    print("\nType Y or N\n")
             if next.capitalize() == "Y":
                 self.refuelings.append(new_refueling)
                 self.refuelings = sorted(
@@ -241,6 +247,8 @@ class RefuelingsManager:
                 break
             elif next.capitalize() == "N":
                 print('\nOK, then start again.\n')
+                pass
+            else:
                 pass
         return
 
@@ -417,11 +425,18 @@ class Menu:
         self.destination_manager.write()
 
     def add_refueling(self):
+        run_manager = True
         while True:
-            self.refuelings_manger.write()
+            if run_manager:
+                self.refuelings_manger.write()
+                run_manager = False
             next = input("\nDo You want to add another refueling? (Y/N)\n")
             if next.capitalize() == "N":
                 break
+            elif next.capitalize() == "Y":
+                run_manager = True
+            else:
+                print("Type Y or N")
 
     def date_input(self):
         today = datetime.today().replace(day=1)
@@ -436,16 +451,25 @@ class Menu:
         print(tabulate(table, tablefmt='grid'))
         while True:
             chose = input("\nWhich month do You choose? (1/2/3)\n")
-            if (chose.isdigit()
-                    and int(chose) == 1
-                    and int(chose) == 2):
+            if chose.isdigit() and int(chose) == 1:
+                month = today.month
                 break
-            elif (chose.isdigit()
-                    and int(chose) == 3):
-                pass  # custom date
+            elif (chose.isdigit() and int(chose) == 2):
+                month = today.month - 1
+                break
+            elif (chose.isdigit() and int(chose) == 3):
+                formats = ["%Y.%m", "%Y,%m", "%Y/%m", "%Y-%m"]
+                other_date = input("\nType date in format YYYY-MM\n")
+                for format in formats:
+                    try:
+                        datetime.strptime(other_date, format)
+                        break
+                    except ValueError:
+                        print("Type date in correct format")
             else:
                 print("Chose must be an integer between 1 and 3")
-            return today.month(), today.year()
+            month = today.month
+            return today.month, today.year
 
 
 def main():
@@ -453,6 +477,7 @@ def main():
     destinations = destinations_manager.read()
     refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
     menu = Menu(destinations_manager, refuelings_manager)
+    print(menu.date_input())
     month, year = menu.date_input()
     menu.add_refueling()
     refuelings = refuelings_manager.read()
