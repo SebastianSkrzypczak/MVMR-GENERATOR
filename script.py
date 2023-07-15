@@ -401,6 +401,11 @@ class Menu:
         self.destination_manager = destination_manager
         self.refuelings_manger = refuelings_manger
 
+    def index(self):
+        pass
+        # displaying menu options
+        # add validation as separate function
+
     def get_milage(self, prev_milage, message):
         '''
         A function that takes input with milage from user and check,
@@ -459,17 +464,22 @@ class Menu:
                 break
             elif (chose.isdigit() and int(chose) == 3):
                 formats = ["%Y.%m", "%Y,%m", "%Y/%m", "%Y-%m"]
-                other_date = input("\nType date in format YYYY-MM\n")
-                for format in formats:
-                    try:
-                        datetime.strptime(other_date, format)
+                while True:
+                    other_date = input("\nType date in format YYYY-MM\n")
+                    for format in formats:
+                        try:
+                            month = datetime.strptime(other_date, format).month
+                            break
+                        except ValueError:
+                            month = None
+                    if month is None:
+                        print("\nType date in correct format\n")
+                    else:
                         break
-                    except ValueError:
-                        print("Type date in correct format")
+                break
             else:
                 print("Chose must be an integer between 1 and 3")
-            month = today.month
-            return today.month, today.year
+        return month, year
 
 
 def main():
@@ -477,7 +487,6 @@ def main():
     destinations = destinations_manager.read()
     refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
     menu = Menu(destinations_manager, refuelings_manager)
-    print(menu.date_input())
     month, year = menu.date_input()
     menu.add_refueling()
     refuelings = refuelings_manager.read()
@@ -490,7 +499,8 @@ def main():
         refuelings,
         prev_milage,
         current_milage,
-        month, year,
+        month,
+        year,
         free_days=[]
         )
     print(tabulate(
