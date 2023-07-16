@@ -343,6 +343,7 @@ def trips(
                                    + '.'
                                    + str(year)
                                    )
+                    datetime_random_date = datetime.strftime(datetime.strptime(random_date, "%d.%m.%Y"), "%d-%m-%Y")
                 else:
                     random_date = (
                         str(random_day)
@@ -350,6 +351,7 @@ def trips(
                         + str(month)
                         + '.'
                         + str(year))
+                    datetime_random_date = datetime.strftime(datetime.strptime(random_date, "%d.%m.%Y"), "%d-%m-%Y")
                 if (not any([
                     True
                     for trip in trips_list
@@ -372,7 +374,7 @@ def trips(
                             random_destination = dest_list[random.randrange(factor_1, factor_2)]  # picking random destionation from dest_list
                             if used_range + int(random_destination.distance) < month_range:
                                 ran_day_trip = trips_tuple(
-                                    random_date,
+                                    datetime_random_date,
                                     random_destination.name,
                                     str(random_destination.distance),
                                     random_destination.location,
@@ -392,18 +394,67 @@ def trips(
             break
         else:
             iteration += 1
+    print(trips_list)
     trips_sorted = sorted(trips_list, key=attrgetter('date'))
     return recalculate(trips_sorted, prev_milage), used_range, iteration
 
 
 class Menu:
-    def __init__(self, destination_manager, refuelings_manger):
+    def __init__(self, destination_manager, refuelings_manager, destinations):
         self.destination_manager = destination_manager
-        self.refuelings_manger = refuelings_manger
+        self.refuelings_manager = refuelings_manager
+        self.destinations = destinations
+
+    def validation(self, user_input, max_value):
+        for value in range(max_value):
+            if user_input.isdigit() and int(user_input) == value:
+                return value
+        return ValueError
+    
+    def generate(self,): 
+        month, year = self.date_input()       
+        self.add_refueling()
+        refuelings = self.refuelings_manager.read()
+        prev_milage = self.get_milage(0, 'previous')
+        current_milage = self.get_milage(prev_milage, 'current')
+        trips_, range_, iteration_ = trips(
+            self.destinations,
+            refuelings,
+            prev_milage,
+            current_milage,
+            month,
+            year,
+            free_days=[]
+            )
+        print(tabulate(
+            trips_,
+            headers=["DATE", "NAME", "DISTANCE", "LOCATION", "MILAGE"],
+            tablefmt="grid"
+            ))
+        print(f'range {range_}')
+        print(f'iteration {iteration_}')
 
     def index(self):
-        pass
-        # displaying menu options
+        print("\nWelcome in MVMR-GENERATOR!")
+        table = [
+            ["1", "Generate new MVMR"],
+            ["2", "Add new destionation"],
+            ["3", "Add new refueling"],
+        ]
+        print(tabulate(table, tablefmt="grid"))
+        while True:
+            user_input = input("\nWhat do You want to do?\n")
+            try:
+                output = self.validation(user_input, len(table))
+                break
+            except ValueError:
+                print(f"Input must be integer between 1 and {len(table)}") 
+        if output == 1:
+            self.generate()
+        elif output == 2:
+            self.add_destination()
+        elif output == 3:
+            self.add_refueling()
         # add validation as separate function
 
     def get_milage(self, prev_milage, message):
@@ -430,10 +481,10 @@ class Menu:
         self.destination_manager.write()
 
     def add_refueling(self):
-        run_manager = True
+        run_manager = False
         while True:
             if run_manager:
-                self.refuelings_manger.write()
+                self.refuelings_manager.write()
                 run_manager = False
             next = input("\nDo You want to add another refueling? (Y/N)\n")
             if next.capitalize() == "N":
@@ -486,30 +537,8 @@ def main():
     destinations_manager = DestinationManager("DESTINATIONS.txt")
     destinations = destinations_manager.read()
     refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
-    menu = Menu(destinations_manager, refuelings_manager)
-    month, year = menu.date_input()
-    menu.add_refueling()
-    refuelings = refuelings_manager.read()
-    prev_milage = menu.get_milage(0, 'previous')
-    current_milage = menu.get_milage(prev_milage, 'current')
-    month = 4
-    year = 2023
-    trips_, range_, iteration_ = trips(
-        destinations,
-        refuelings,
-        prev_milage,
-        current_milage,
-        month,
-        year,
-        free_days=[]
-        )
-    print(tabulate(
-        trips_,
-        headers=["DATE", "NAME", "DISTANCE", "LOCATION", "MILAGE"],
-        tablefmt="grid"
-        ))
-    print(f'range {range_}')
-    print(f'iteration {iteration_}')
+    menu = Menu(destinations_manager, refuelings_manager, destinations)
+    menu.index()
 
 
 if __name__ == "__main__":
