@@ -3,6 +3,7 @@ from calendar import monthrange
 from operator import attrgetter
 from tabulate import tabulate
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 import random
 
 
@@ -51,7 +52,7 @@ class FileManager:
             print(f'Error reading the {self.file_name} file')
             return False
         for line in data:
-            file.write(f'{line}/n')
+            file.write(f'{line}\n')
         file.close()
         return
 
@@ -129,7 +130,8 @@ class DestinationManager:
 class RefuelingsManager:
     def __init__(self, file_name, destinations):
         self.file_manger = FileManager(file_name)
-        self.refuelings = self.file_manger.read_with_error_check()
+        self.refuelings_raw = self.file_manger.read_with_error_check()
+        self.refuelings = self.read()
         self.destinations = destinations
 
     def read(self):
@@ -143,66 +145,111 @@ class RefuelingsManager:
             ['date', 'volume', 'name']
         )
         fuel_list = []
-        for line in self.refuelings:
+        for line in self.refuelings_raw:
             line = line[:-1]  # deleting "/n"
-            separated = line.split("	")
+            separated = line.split("\t")
+            separated[1] = separated[1].replace(",", ".")
             temp_line = fuel_tuple(
-                separated[0],
-                int(separated[1]),
+                datetime.strptime(separated[0], "%Y/%m/%d"),
+                float(separated[1]),
                 separated[2])
             fuel_list.append(temp_line)
         return sorted(fuel_list, key=attrgetter('date'))
 
     def write(self):
         '''
-        This function takes data about new refueling
+        This function takes data about the new refueling
         from user and writes it to a refuelings list
         '''
-        destination_tuple = namedtuple(
+        formats = ["%Y.%m.%d", "%Y,%m,%d", "%Y/%m/%d", "%Y-%m-%d"]
+        none = False
+        refueling_tuple = namedtuple(
             'refueling',
             ['date', 'volume', 'name']
         )
         while True:
-            date = input(
-                "Type new refueling's date in format YYYY.MM.DD: "
+            while True:
+                date = input(
+                    "Type new refueling's date in format YYYY.MM.DD: "
+                    )
+                for format in formats:
+                    try:
+                        datetime.strptime(date, format)
+                        none = True
+                        break
+                    except ValueError:
+                        pass
+                if not none:
+                    print("Incorrect format of date")
+                else:
+                    break
+            while True:
+                volume = input(
+                    "Type new refueling's volume: "
+                    )
+                if (volume.isdigit()
+                        and int(volume) > 0
+                        and int(volume) < 200):
+                    break
+                else:
+                    print("Volume must be an integer between 0 and 200")
+            for destination in self.destinations:
+                print(f'{destination.id}:     {destination.name}')
+            while True:
+                id = input(
+                    "Type new refueling's nearest location ID from list above: "
+                    )
+                if int(id) > 0 and  \
+                   int(id) <= len(self.destinations):
+                    break
+                else:
+                    print('ID must be and integer')
+            new_refueling = refueling_tuple(
+                datetime.strptime(date, "%Y/%m/%d"),
+                float(volume),
+                self.destinations[int(id)-1].name
                 )
-            try:
-                datetime.strptime(date, "%Y.%m.%d")
-                break
-            except ValueError:
-                print("Incorrect format of date")
-        while True:
-            volume = input(
-                "Type new refueling's volume: "
+            print(  # tabulate!
+                '\nYour new refueling: \n')
+            table = [
+                ["DATE", new_refueling.date.strftime("%Y-%m-%d")],
+                ["VOLUME", new_refueling.volume],
+                ["NAME", new_refueling.name]
+            ]
+            print(tabulate(table, tablefmt="grid"))  
+            while True:
+                next = input(
+                    "\nAll informations correct? If so refueling will be saved (Y/N)\n"
+                    )
+                if next.capitalize() == "Y" \
+                   or next.capitalize() == "N":
+                    break
+                else:
+                    print("\nType Y or N\n")
+            if next.capitalize() == "Y":
+                self.refuelings.append(new_refueling)
+                self.refuelings = sorted(
+                    self.refuelings,
+                    key=attrgetter("date"),
+                    reverse=False
                 )
-            if (volume.isdigit()
-                    and int(volume) > 0
-                    and int(volume) < 200):
+                format = "%Y/%m/%d"
+                refueling_frmtd = f'{new_refueling.date.strftime(format)}\t' \
+                                  f'{new_refueling.volume}\t' \
+                                  f'{new_refueling.name}'
+                data_to_be_saved = []
+                data_to_be_saved.append(refueling_frmtd)
+                try:
+                    self.file_manger.write_with_error_check(data_to_be_saved)
+                    print("Refueling saved correctly")
+                except False:
+                    print("An error occurred")
                 break
+            elif next.capitalize() == "N":
+                print('\nOK, then start again.\n')
+                pass
             else:
-                print("Volume must be an integer between 0 and 200")
-        for index, destination in enumerate(self.destinations):
-            print(f'{destination.id}:     {destination.name}')
-        while True:
-            id = input(
-                "Type new refueling's nearest location ID from list above: "
-                )
-            if id > 0 and id < len(destination):
-                break
-            else:
-                print('ID must be and integer')
-        new_destination = destination_tuple(
-            date,
-            int(volume),
-            int(id)
-            )
-        destination_list = self.refuelings
-        destination_list.append(new_destination)
-        self.refuelings = sorted(
-            destination_list,
-            key=attrgetter("distance"),
-            reverse=True
-            )
+                pass
         return
 
 
@@ -296,6 +343,7 @@ def trips(
                                    + '.'
                                    + str(year)
                                    )
+                    datetime_random_date = datetime.strftime(datetime.strptime(random_date, "%d.%m.%Y"), "%d-%m-%Y")
                 else:
                     random_date = (
                         str(random_day)
@@ -303,6 +351,7 @@ def trips(
                         + str(month)
                         + '.'
                         + str(year))
+                    datetime_random_date = datetime.strftime(datetime.strptime(random_date, "%d.%m.%Y"), "%d-%m-%Y")
                 if (not any([
                     True
                     for trip in trips_list
@@ -325,7 +374,7 @@ def trips(
                             random_destination = dest_list[random.randrange(factor_1, factor_2)]  # picking random destionation from dest_list
                             if used_range + int(random_destination.distance) < month_range:
                                 ran_day_trip = trips_tuple(
-                                    random_date,
+                                    datetime_random_date,
                                     random_destination.name,
                                     str(random_destination.distance),
                                     random_destination.location,
@@ -345,16 +394,70 @@ def trips(
             break
         else:
             iteration += 1
+    print(trips_list)
     trips_sorted = sorted(trips_list, key=attrgetter('date'))
     return recalculate(trips_sorted, prev_milage), used_range, iteration
 
 
 class Menu:
-    def __init__(self, destination_manager, refuelings_manger):
+    def __init__(self, destination_manager, refuelings_manager, destinations):
         self.destination_manager = destination_manager
-        self.refuelings_manger = refuelings_manger
+        self.refuelings_manager = refuelings_manager
+        self.destinations = destinations
 
-    def get_milage(prev_milage, message):
+    def validation(self, user_input, max_value):
+        for value in range(max_value):
+            if user_input.isdigit() and int(user_input) == value:
+                return value
+        return ValueError
+    
+    def generate(self,): 
+        month, year = self.date_input()       
+        self.add_refueling()
+        refuelings = self.refuelings_manager.read()
+        prev_milage = self.get_milage(0, 'previous')
+        current_milage = self.get_milage(prev_milage, 'current')
+        trips_, range_, iteration_ = trips(
+            self.destinations,
+            refuelings,
+            prev_milage,
+            current_milage,
+            month,
+            year,
+            free_days=[]
+            )
+        print(tabulate(
+            trips_,
+            headers=["DATE", "NAME", "DISTANCE", "LOCATION", "MILAGE"],
+            tablefmt="grid"
+            ))
+        print(f'range {range_}')
+        print(f'iteration {iteration_}')
+
+    def index(self):
+        print("\nWelcome in MVMR-GENERATOR!")
+        table = [
+            ["1", "Generate new MVMR"],
+            ["2", "Add new destionation"],
+            ["3", "Add new refueling"],
+        ]
+        print(tabulate(table, tablefmt="grid"))
+        while True:
+            user_input = input("\nWhat do You want to do?\n")
+            try:
+                output = self.validation(user_input, len(table))
+                break
+            except ValueError:
+                print(f"Input must be integer between 1 and {len(table)}") 
+        if output == 1:
+            self.generate()
+        elif output == 2:
+            self.add_destination()
+        elif output == 3:
+            self.add_refueling()
+        # add validation as separate function
+
+    def get_milage(self, prev_milage, message):
         '''
         A function that takes input with milage from user and check,
         if it meets the assumptions.
@@ -378,38 +481,64 @@ class Menu:
         self.destination_manager.write()
 
     def add_refueling(self):
-        self.refuelings_manger.write()
+        run_manager = False
+        while True:
+            if run_manager:
+                self.refuelings_manager.write()
+                run_manager = False
+            next = input("\nDo You want to add another refueling? (Y/N)\n")
+            if next.capitalize() == "N":
+                break
+            elif next.capitalize() == "Y":
+                run_manager = True
+            else:
+                print("Type Y or N")
 
     def date_input(self):
-        month = 0
+        today = datetime.today().replace(day=1)
+        current_month = today.strftime("%B")
+        previous_month = (today - relativedelta(days=1)).strftime("%B")
+        year = today.year
+        table = [
+            ["1.", f'{current_month} {year}'],
+            ["2.", f'{previous_month} {year}'],
+            ["3.", "Different month"],
+        ]
+        print(tabulate(table, tablefmt='grid'))
+        while True:
+            chose = input("\nWhich month do You choose? (1/2/3)\n")
+            if chose.isdigit() and int(chose) == 1:
+                month = today.month
+                break
+            elif (chose.isdigit() and int(chose) == 2):
+                month = today.month - 1
+                break
+            elif (chose.isdigit() and int(chose) == 3):
+                formats = ["%Y.%m", "%Y,%m", "%Y/%m", "%Y-%m"]
+                while True:
+                    other_date = input("\nType date in format YYYY-MM\n")
+                    for format in formats:
+                        try:
+                            month = datetime.strptime(other_date, format).month
+                            break
+                        except ValueError:
+                            month = None
+                    if month is None:
+                        print("\nType date in correct format\n")
+                    else:
+                        break
+                break
+            else:
+                print("Chose must be an integer between 1 and 3")
+        return month, year
 
 
 def main():
     destinations_manager = DestinationManager("DESTINATIONS.txt")
     destinations = destinations_manager.read()
     refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
-    menu = Menu(destinations_manager, refuelings_manager)
-    refuelings_manager.write()
-    refuelings = refuelings_manager.read()
-    prev_milage = menu.get_milage(0, 'previous')
-    current_milage = menu.get_milage(prev_milage, 'current')
-    month = 4
-    year = 2023
-    trips_, range_, iteration_ = trips(
-        destinations,
-        refuelings,
-        prev_milage,
-        current_milage,
-        month, year,
-        free_days=[]
-        )
-    print(tabulate(
-        trips_,
-        headers=["DATE", "NAME", "DISTANCE", "LOCATION", "MILAGE"],
-        tablefmt="grid"
-        ))
-    print(f'range {range_}')
-    print(f'iteration {iteration_}')
+    menu = Menu(destinations_manager, refuelings_manager, destinations)
+    menu.index()
 
 
 if __name__ == "__main__":
