@@ -97,10 +97,11 @@ class DestinationManager:
             'destination',
             ['id', 'name', 'location', 'distance']
         )
-        new_destination_id = self.destinations[-1].id
-        print(f'new_destination_id = {new_destination_id}')
-        new_destination_name = input("Type new destination's name: ")
-        new_destination_location = input("Type new destination's location: ")
+        destinations = self.read()
+        new_destination_id = int(destinations[-1].id)+1
+        print(f'New destiantions ID: {new_destination_id}')
+        new_destination_name = input("\nType new destination's name: ")
+        new_destination_location = input("\nType new destination's location: ")
         while True:
             new_destination_distance = input(
                 "Type new destination's distance: "
@@ -117,13 +118,41 @@ class DestinationManager:
             new_destination_location,
             int(new_destination_distance)
             )
-        destination_list = self.destinations
-        destination_list.append(new_destination)
-        self.destinations = sorted(
-            destination_list,
-            key=attrgetter("distance"),
-            reverse=True
-            )
+        table = [
+            ["ID", new_destination_id],
+            ["NAME", new_destination_name],
+            ["LOCATION", new_destination_location],
+            ["DISTANCE", new_destination_distance]
+        ]
+        print(tabulate(table, tablefmt="grid"))
+        while True:
+            next = input(
+                "\nAll informations correct? If so refueling will be saved (Y/N)\n"
+                )
+            if next.capitalize() == "Y":
+                destinations.append(new_destination)
+                self.destinations = sorted(
+                    destinations,
+                    key=attrgetter("distance"),
+                    reverse=True
+                    )
+                destination_frmtd = f'{new_destination_id}\t' \
+                                    f'{new_destination_name}\t' \
+                                    f'{new_destination_location}\t'\
+                                    f'{new_destination_distance}'
+                data_to_be_saved = []
+                data_to_be_saved.append(destination_frmtd)
+                try:
+                    self.file_manger.write_with_error_check(data_to_be_saved)
+                    print("Refueling saved correctly")
+                except False:
+                    print("An error occurred")
+                break
+            elif next.capitalize() == "N":
+                print('\nOK, then start again.\n')
+                pass
+            else:
+                print("\nType Y or N\n")
         return
 
 
@@ -216,7 +245,7 @@ class RefuelingsManager:
                 ["VOLUME", new_refueling.volume],
                 ["NAME", new_refueling.name]
             ]
-            print(tabulate(table, tablefmt="grid"))  
+            print(tabulate(table, tablefmt="grid"))
             while True:
                 next = input(
                     "\nAll informations correct? If so refueling will be saved (Y/N)\n"
@@ -318,28 +347,30 @@ def trips(
         used_range = 0
         trips_list = []
         for fuel_tuple in fuel_list:
-            fuel_name = fuel_tuple.name
-            temp_destination = (
-                dest
-                for dest in dest_list
-                if dest.name == fuel_name
+            fuel_month = fuel_tuple.date.month
+            if fuel_month == int(month):
+                fuel_name = fuel_tuple.name
+                temp_destination = (
+                    dest
+                    for dest in dest_list
+                    if dest.name == fuel_name
+                    )
+                try:
+                    next_destination = next(temp_destination)
+                except StopIteration:
+                    print("Error has occured. Check data.")
+                temp_name = next_destination.name
+                temp_distance = next_destination.distance
+                temp_location = next_destination.location
+                temp = trips_tuple(
+                    fuel_tuple.date,
+                    temp_name,
+                    temp_distance,
+                    temp_location,
+                    "0"
                 )
-            try:
-                next_destination = next(temp_destination)
-            except StopIteration:
-                print("Error has occured in comparing refuelings with destinations. Check data.")
-            temp_name = next_destination.name
-            temp_distance = next_destination.distance
-            temp_location = next_destination.location
-            temp = trips_tuple(
-                fuel_tuple.date,
-                temp_name,
-                temp_distance,
-                temp_location,
-                "0"
-            )
-            used_range += int(temp_distance)
-            trips_list.append(temp)
+                used_range += int(temp_distance)
+                trips_list.append(temp)
         day_iteration = 0  # Safety variable to avoid too long looping
         while used_range < month_range:
             if day_iteration < 30:
@@ -352,7 +383,10 @@ def trips(
                                    + '.'
                                    + str(year)
                                    )
-                    datetime_random_date = datetime.strptime(random_date, "%d.%m.%Y")
+                    datetime_random_date = datetime.strptime(
+                        random_date,
+                        "%d.%m.%Y"
+                        )
                 else:
                     random_date = (
                         str(random_day)
@@ -360,7 +394,10 @@ def trips(
                         + str(month)
                         + '.'
                         + str(year))
-                    datetime_random_date = datetime.strptime(random_date, "%d.%m.%Y")
+                    datetime_random_date = datetime.strptime(
+                        random_date,
+                        "%d.%m.%Y"
+                        )
                 if (not any([
                     True
                     for trip in trips_list
@@ -380,7 +417,9 @@ def trips(
                             else:
                                 factor_1 = 15
                                 factor_2 = len(dest_list)-1
-                            random_destination = dest_list[random.randrange(factor_1, factor_2)]  # picking random destionation from dest_list
+                            random_destination = dest_list[
+                                random.randrange(factor_1, factor_2)
+                                ]  # picking random destionation from dest_list
                             if used_range + int(random_destination.distance) < month_range:
                                 ran_day_trip = trips_tuple(
                                     datetime_random_date,
@@ -414,6 +453,22 @@ class Menu:
         self.destinations = destinations
         self.file_manager_all = FileManager("TRIPS.txt")
 
+    def show_destinations(self):
+        table = tabulate(
+            self.destinations,
+            headers=["ID", "NAME", "LOCATION", "DISTANCE"],
+            tablefmt="grid"
+            )
+        print(table)
+
+    def show_refuelings(self):
+        table = tabulate(
+            self.refuelings_manager.read(),
+            headers=["DATE", "VOLUME", "NAME"],
+            tablefmt="grid"
+            )
+        print(table)
+
     def validation(self, user_input, max_value):
         for value in range(0, max_value+1):
             if user_input.isdigit() and int(user_input) == value:
@@ -421,7 +476,7 @@ class Menu:
         raise ValueError
 
     def generate(self):
-        month, year = self.date_input()       
+        month, year = self.date_input()
         self.add_refueling()
         refuelings = self.refuelings_manager.read()
         prev_milage = self.get_milage(0, 'previous')
@@ -457,6 +512,8 @@ class Menu:
             ["1", "Generate new MVMR"],
             ["2", "Add new destination"],
             ["3", "Add new refueling"],
+            ["4", "Show all refuelings"],
+            ["5", "Show all destiantions"],
             ["0", "EXIT"]
         ]
         print(tabulate(table, tablefmt="grid"))
@@ -466,16 +523,20 @@ class Menu:
                 output = self.validation(user_input, len(table))
                 break
             except ValueError:
-                print(f"Input must be integer between 0 and {len(table)}") 
+                print(f"Input must be integer between 0 and {len(table)}")
         if output == 1:
             self.generate()
         elif output == 2:
             self.add_destination()
         elif output == 3:
             self.add_refueling()
+        elif output == 4:
+            self.show_refuelings()
+        elif output == 5:
+            self.show_destinations()
         elif output == 0:
             exit(0)
-        
+
     def get_milage(self, prev_milage, message):
         '''
         A function that takes input with milage from user and check,
@@ -562,13 +623,17 @@ class Menu:
                 print("Chose must be an integer between 1 and 3")
         return month, year
 
+
 def main():
-    destinations_manager = DestinationManager("DESTINATIONS.txt")
-    destinations = destinations_manager.read()
-    refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
-    menu = Menu(destinations_manager, refuelings_manager, destinations)
     while True:
+        destinations_manager = None
+        destinations_manager = DestinationManager("DESTINATIONS.txt")
+        destinations = destinations_manager.read()
+        refuelings_manager = None
+        refuelings_manager = RefuelingsManager("REFUELINGS.txt", destinations)
+        menu = Menu(destinations_manager, refuelings_manager, destinations)
         menu.index()
+
 
 if __name__ == "__main__":
     main()
