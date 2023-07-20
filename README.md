@@ -18,9 +18,6 @@ Monthly Vehicle Mileage Reports (MVMR) Generator
     Clone the repository:
       git clone https://github.com/SebastianSkrzypczak/MVMR-GENERATOR.git
     
-    Navigate to the project directory:
-      cd mvmr-generator
-    
     Install the required dependencies:
       pip install -r requirements.txt
 
