@@ -37,18 +37,13 @@ Monthly Vehicle Mileage Reports (MVMR) Generator
       Choose the month and year for which you want to generate the report.
       The script will calculate trips based on destinations, refuelings, and mileage information and display them in a table.
 
-6. License
-    This project is licensed under the MIT License - see the LICENSE file for details.
-
-7. Contribution
-    Contributions to this project are welcome. If you find any issues or have suggestions for improvements, feel free to create an issue or submit a pull request.
-
-8. Acknowledgments
+6. Acknowledgments
     The script utilizes the tabulate library for generating tabular output.
     The dateutil library is used for handling dates and times.
 
-9. Author
+7. Author
     Sebastian Skrzypczak
     For inquiries, please contact: sebastian.skrzypczak98@gmail.com
+   
 ![alt text](1.png)
 ![alt_text](2.png)
