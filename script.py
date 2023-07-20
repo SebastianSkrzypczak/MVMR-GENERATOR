@@ -13,7 +13,7 @@ class FileManager:
 
     def read_with_error_check(self):
         '''
-        A function that:
+        A function:
         -> opens file with given name,
         -> checks if errors ocured,
         -> rewrites it to new variable,
@@ -22,7 +22,7 @@ class FileManager:
         (one string is one line from base file)
         '''
         try:
-            file = open(self.file_name, "r", encoding="utf8")
+            file = open(self.file_name, "r", encoding="utf-8")
         except FileNotFoundError:
             print(f'File {self.file_name} not found')
             return False
@@ -37,7 +37,7 @@ class FileManager:
 
     def write_with_error_check(self, data):
         '''
-        A function that:
+        A function:
         -> opens file with given name,
         -> check if errors ocured,
         -> writes given data line by line,
@@ -64,8 +64,11 @@ class DestinationManager:
 
     def read(self):
         '''
-        This function gest list of strings and rewrites it
-        as list of namedtupes ordered by distance.
+        Function rewriting list of strings, as list of namedtuples.
+        IN:
+        ->list of strings read from file
+        OUT:
+        ->sorted list of namedtuples
         '''
         destination_tuple = namedtuple(
             'destination',
@@ -90,15 +93,19 @@ class DestinationManager:
 
     def write(self):
         '''
-        This function takes data about new destiantion
-        from user and writes it to a destination list
+        Function adding new destination to destination list and to file. 
+        IN:
+        ->User input
+        OUT:
+        ->New destination writen to file
         '''
         destination_tuple = namedtuple(
             'destination',
             ['id', 'name', 'location', 'distance']
         )
         destinations = self.read()
-        new_destination_id = int(destinations[-1].id)+1
+        # new ID is the last destination on destinations list + 1
+        new_destination_id = int(destinations[-1].id)+1 
         print(f'New destiantions ID: {new_destination_id}')
         new_destination_name = input("\nType new destination's name: ")
         new_destination_location = input("\nType new destination's location: ")
@@ -126,10 +133,10 @@ class DestinationManager:
         ]
         print(tabulate(table, tablefmt="grid"))
         while True:
-            next = input(
-                "\nAll informations correct? If so refueling will be saved (Y/N)\n"
+            user_input = input(
+                "\nAll informations correct? If so destination will be saved (Y/N)\n"
                 )
-            if next.capitalize() == "Y":
+            if user_input.capitalize() == "Y":
                 destinations.append(new_destination)
                 self.destinations = sorted(
                     destinations,
@@ -148,7 +155,7 @@ class DestinationManager:
                 except False:
                     print("An error occurred")
                 break
-            elif next.capitalize() == "N":
+            elif user_input.capitalize() == "N":
                 print('\nOK, then start again.\n')
                 pass
             else:
@@ -165,9 +172,11 @@ class RefuelingsManager:
 
     def read(self):
         '''
-        This function gest list of strings and rewrites
-        it as a list of namedtupes
-        sorted by dates of refueling.
+        Function rewriting list of strings, as list of namedtuples.
+        IN:
+        ->list of strings read from file
+        OUT:
+        ->sorted list of namedtuples
         '''
         fuel_tuple = namedtuple(
             'refueling',
@@ -187,10 +196,14 @@ class RefuelingsManager:
 
     def write(self):
         '''
-        This function takes data about the new refueling
-        from user and writes it to a refuelings list
+        Function adding new refueling to refuelings list and to file. 
+        IN:
+        ->User input
+        OUT:
+        ->New refueling writen to file
         '''
         formats = ["%Y.%m.%d", "%Y,%m,%d", "%Y/%m/%d", "%Y-%m-%d"]
+        # none variable is used to check if data fit any of above formats
         none = False
         refueling_tuple = namedtuple(
             'refueling',
@@ -238,8 +251,7 @@ class RefuelingsManager:
                 float(volume),
                 self.destinations[int(id)-1].name
                 )
-            print(  # tabulate!
-                '\nYour new refueling: \n')
+            print('\nYour new refueling: \n')
             table = [
                 ["DATE", new_refueling.date.strftime("%Y-%m-%d")],
                 ["VOLUME", new_refueling.volume],
@@ -247,15 +259,15 @@ class RefuelingsManager:
             ]
             print(tabulate(table, tablefmt="grid"))
             while True:
-                next = input(
+                user_input = input(
                     "\nAll informations correct? If so refueling will be saved (Y/N)\n"
                     )
-                if next.capitalize() == "Y" \
-                   or next.capitalize() == "N":
+                if user_input.capitalize() == "Y" \
+                   or user_input.capitalize() == "N":
                     break
                 else:
                     print("\nType Y or N\n")
-            if next.capitalize() == "Y":
+            if user_input.capitalize() == "Y":
                 self.refuelings.append(new_refueling)
                 self.refuelings = sorted(
                     self.refuelings,
@@ -274,7 +286,7 @@ class RefuelingsManager:
                 except False:
                     print("An error occurred")
                 break
-            elif next.capitalize() == "N":
+            elif user_input.capitalize() == "N":
                 print('\nOK, then start again.\n')
                 pass
             else:
@@ -284,12 +296,12 @@ class RefuelingsManager:
 
 def recalculate(trips_list, prev_milage):
     '''
-    Function takes two arguments:
+    Function adds distance by every trip and rewrites it to required format.
+    IN:
     -> trips_list - genereted in trips() list of all trips in given month,
     -> prev_milage - milage from previous month
-    and:
-    -> adds distance by every trip,
-    -> rewrites it to required format.
+    OUT:
+    ->list of namedtuples in correct format    
     '''
     trips_tuple = namedtuple(
         'trip',
@@ -311,7 +323,7 @@ def recalculate(trips_list, prev_milage):
         distance = trip.distance
         location = trip.location
         milage_now = str(last + int(distance))
-        last = last + int(distance)
+        last += int(distance)
         temp = trips_tuple(date, name, distance, location, milage_now)
         trip_recalc.append(temp)
     return trip_recalc
@@ -320,18 +332,27 @@ def recalculate(trips_list, prev_milage):
 def trips(
         dest_list, fuel_list,
         prev_milage, current_milage,
-        month, year, free_days
+        month, year, free_days,
+        **kwargs
         ):
     '''
     In this function a milage records table is beeing generated.
-    The function takes following arguments:
+    IN:
     -> dest_list - a list od destinations read in dest(),
     -> fuel_list - a list of refuelings read in fuel(),
     -> prev_milage - milage from last month,
     -> current_milage,
     -> month,
     -> year.
+    OUT:
+    ->recalculated() list of trips
+    ->used range
+    ->iteration of main loop which gave good results
     '''
+    set_day_iteration = kwargs.get('set_day_iteration')
+    set_trip_iteration = kwargs.get('set_trip_iteration')
+    set_factor = kwargs.get('set_factor')
+    set_max_difference = kwargs.get('set_max_difference')
     trips_tuple = namedtuple(
         'trip',
         ['date', 'name', 'distance', 'location', 'milage_now']
@@ -343,9 +364,12 @@ def trips(
     else:
         month = str(month)
     iteration = 0
+
     while True:
         used_range = 0
         trips_list = []
+
+        # rewriting trips from refuelings list
         for fuel_tuple in fuel_list:
             fuel_month = fuel_tuple.date.month
             if fuel_month == int(month):
@@ -358,6 +382,8 @@ def trips(
                 try:
                     next_destination = next(temp_destination)
                 except StopIteration:
+                    # handling exception if none of destinations 
+                    # match refueling destination
                     print("Error has occured. Check data.")
                 temp_name = next_destination.name
                 temp_distance = next_destination.distance
@@ -371,51 +397,45 @@ def trips(
                 )
                 used_range += int(temp_distance)
                 trips_list.append(temp)
+
         day_iteration = 0  # Safety variable to avoid too long looping
         while used_range < month_range:
-            if day_iteration < 30:
+            # picking random day
+            if day_iteration < set_day_iteration:
                 random_day = random.randrange(1, days)
-                if random_day < 10:
-                    random_date = ('0'
-                                   + str(random_day)
-                                   + '.'
-                                   + str(month)
-                                   + '.'
-                                   + str(year)
-                                   )
-                    datetime_random_date = datetime.strptime(
-                        random_date,
-                        "%d.%m.%Y"
-                        )
-                else:
-                    random_date = (
-                        str(random_day)
-                        + '.'
-                        + str(month)
-                        + '.'
-                        + str(year))
-                    datetime_random_date = datetime.strptime(
-                        random_date,
-                        "%d.%m.%Y"
-                        )
-                if (not any([
+                random_date = (
+                    str(random_day)
+                    + '.'
+                    + str(month)
+                    + '.'
+                    + str(year))
+                datetime_random_date = datetime.strptime(
+                    random_date,
+                    "%d.%m.%Y"
+                    )
+
+                if (not any([  # checking if generated day is allready used
                     True
                     for trip in trips_list
                     if trip.date == random_date
-                    ]) and  # checking if generated day is allredy used
-                    not any([
+                    ]) and
+                    not any([  # checking if generated day is a free day
                         True
                         for days in free_days
                         if days == random_date
-                        ])):  # checking if generated day is a free day
+                        ])):
+
                     trip_iteration = 0  # safety variable to avoid too long looping
                     while True:
-                        if trip_iteration < 30:
-                            if month_range - used_range > 70:  # factor determining which trips should be taken first
+                        # picking destination for random day
+                        if trip_iteration < set_trip_iteration:
+                            # factor determining which trips should be taken first
+                            # (at first it takes the longest trips, and then closest)
+                            if month_range - used_range > 70:
                                 factor_1 = 1
-                                factor_2 = 15
+                                factor_2 = set_factor
                             else:
-                                factor_1 = 15
+                                factor_1 = set_factor
                                 factor_2 = len(dest_list)-1
                             random_destination = dest_list[
                                 random.randrange(factor_1, factor_2)
@@ -438,7 +458,7 @@ def trips(
                 day_iteration += 1
             else:
                 break
-        if month_range - used_range <= 30:  # if difference is greater than ... script should start again.
+        if month_range - used_range <= set_max_difference:  # if difference is greater than set_max_difference script should start again.
             break
         else:
             iteration += 1
@@ -454,6 +474,9 @@ class Menu:
         self.file_manager_all = FileManager("TRIPS.txt")
 
     def show_destinations(self):
+        '''
+        Function printing all destinations as grid table
+        '''
         table = tabulate(
             self.destinations,
             headers=["ID", "NAME", "LOCATION", "DISTANCE"],
@@ -462,6 +485,9 @@ class Menu:
         print(table)
 
     def show_refuelings(self):
+        '''
+        Function printing all refuelings as grid table
+        '''
         table = tabulate(
             self.refuelings_manager.read(),
             headers=["DATE", "VOLUME", "NAME"],
@@ -470,12 +496,21 @@ class Menu:
         print(table)
 
     def validation(self, user_input, max_value):
+        '''
+        checking if user input is correct
+        '''
         for value in range(0, max_value+1):
             if user_input.isdigit() and int(user_input) == value:
                 return value
         raise ValueError
 
     def generate(self):
+        '''
+        Function:
+        -> collects data from other functions
+        ->runs trips()
+        ->prints it as grid table
+        '''
         month, year = self.date_input()
         self.add_refueling()
         refuelings = self.refuelings_manager.read()
@@ -488,7 +523,11 @@ class Menu:
             current_milage,
             month,
             year,
-            free_days=[]
+            free_days=[],
+            set_day_iteration=15,
+            set_trip_iteration=30,
+            set_factor=15,
+            set_max_difference=30
             )
         month_table = tabulate(
             trips_,
@@ -500,8 +539,8 @@ class Menu:
         all_table = all_table[5:]
         for line in month_table:
             print(line)
-        print(f'range {range_}')
-        print(f'iteration {iteration_}')
+        print(f'Used range: {range_}')
+        print(f'Result in {iteration_}. iteration')
         # self.file_manager_all.write_with_error_check(all_table)
         # file_manager_month = FileManager(f'{month}_{year}.txt')
         # file_manager_month.write_with_error_check(month_table)
