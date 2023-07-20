@@ -16,7 +16,7 @@ Monthly Vehicle Mileage Reports (MVMR) Generator
 
 4. Installation
     Clone the repository:
-      git clone https://github.com/your-username/mvmr-generator.git
+      git clone https://github.com/SebastianSkrzypczak/MVMR-GENERATOR.git
     
     Navigate to the project directory:
       cd mvmr-generator
