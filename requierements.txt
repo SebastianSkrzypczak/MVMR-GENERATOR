@@ -1,0 +1,8 @@
+# Monthly Vehicle Mileage Reports (MVMR) Generator Dependencies
+
+# Python version requirement
+python>=3.5
+
+# Third-party libraries
+tabulate>=0.8.9
+dateutil>=2.8.2
