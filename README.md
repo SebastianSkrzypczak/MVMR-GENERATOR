@@ -1,4 +1,4 @@
-![alt text](1.png)
+
 
 Monthly Vehicle Mileage Reports (MVMR) Generator
 
@@ -53,3 +53,5 @@ Monthly Vehicle Mileage Reports (MVMR) Generator
 9. Author
     Sebastian Skrzypczak
     For inquiries, please contact: sebastian.skrzypczak98@gmail.com
+![alt text](1.png)
+![alt_text](2.png)
