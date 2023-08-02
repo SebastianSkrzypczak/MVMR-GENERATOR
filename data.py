@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Self
 
 
 class DataStorage(ABC):
@@ -54,7 +55,7 @@ class Trip:
 
 @dataclass
 class Refueling:
-    '''Class representing refueling.'''
+    '''Class representing one refueling.'''
     id: int
     date: datetime
     volume: float
@@ -101,13 +102,13 @@ class Repository(ABC):
     def __init__(self) -> None:
         self.elements_list: list[self.ElementType] = []
 
-    def add(self, new_element: 'self.ElementType') -> None:
+    def add(self, new_element: 'Self.ElementType') -> None:
         self.elements_list.append(new_element)
 
-    def update(self, updated_element: 'self.ElementType') -> None:
+    def update(self, updated_element: 'Self.ElementType') -> None:
         self.elements_list[updated_element.id] = updated_element
 
-    def delete(self, deleted_element: 'self.ElementType') -> None:
+    def delete(self, deleted_element: 'Self.ElementType') -> None:
         self.elements_list.pop(deleted_element.id)
         self.renumerate()
 
@@ -119,7 +120,7 @@ class Repository(ABC):
 @dataclass
 class DestinationRepository(Repository):
     '''Class to represent all destinations and to manage them.'''
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
     ElementType = Destination
@@ -127,23 +128,50 @@ class DestinationRepository(Repository):
 
 @dataclass
 class RefuelingRepository(Repository):
+    '''Class to represent all refuelings and to manage them.'''
+    def __init__(self) -> None:
+        super().__init__()
 
     ElementType = Refueling
 
 
 @dataclass
 class TripsRepository(Repository):
+    '''Class to represent all trips and to manage them.'''
+    def __init__(self) -> None:
+        super().__init__()
 
     ElementType = Trip
 
+@dataclass
+class Conversion:
+
+    destinations_text_file = TextFile("DESTINATIONS.txt")
+    refuelings_text_file = TextFile("REFUELINGS.txt")
+    trips_text_file = TextFile("TRIPS.txt")
+    destinations: DestinationRepository
+    # refuelings: RefuelingRepository
+    # trips: TripsRepository
+
+    def destination_conversion(self):
+        destinations = self.destinations_text_file.read()
+        for line in destinations:
+            data = line.split('\t')
+            id = int(data[0])
+            name = data[1]
+            location = data[2]
+            distance = float(data[3])
+            new_destinations = Destination(id, name, location, distance)
+            self.destinations.add(new_destinations)
+    
 
 def main():
-    # Only for testing
+    #  Only for testing
     '''destination_1 = Destination(0, "Dest_1", "Location_1", 1000)
     destination_2 = Destination(1, "Dest_2", "Location_2", 2000)
-    destination_3 = Destination(2, "Dest_3", "Location_3", 3000)
+    destination_3 = Destination(2, "Dest_3", "Location_3", 3000)'''
     destinations = DestinationRepository()
-    destinations.add(destination_1)
+    '''destinations.add(destination_1)
     destinations.add(destination_2)
     destinations.add(destination_3)
     for destination in destinations.elements_list:
@@ -157,13 +185,14 @@ def main():
     print("Updated")
     for destination in destinations.elements_list:
         print(destination)
-    '''
+        '''
     text_file = TextFile("DESTINATIONS.txt")
     output = text_file.read()
-    for line in output:
-        print(line)
-    
-
+    # print(output)
+    conversion = Conversion(destinations=destinations)
+    conversion.destination_conversion()
+    for destination in destinations.elements_list:
+        print(destination)
 
 
 if __name__ == "__main__":
