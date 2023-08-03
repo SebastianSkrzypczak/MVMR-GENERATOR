@@ -59,7 +59,7 @@ class Refueling:
     id: int
     date: datetime
     volume: float
-    destination: Destination
+    destination_id: int
 
     def __str__(self) -> str:
         return f'{self.id}\t{self.date}\t{self.volume}\t{self.destination.name}'
@@ -143,17 +143,24 @@ class TripsRepository(Repository):
 
     ElementType = Trip
 
+
 @dataclass
-class Conversion:
+class Conversion(ABC):
+    '''Generic conversion class for converting data from all kind of sources to objects'''
+
+    @abstractmethod
+    def convert(self):
+        pass
+
+
+@dataclass
+class DestinationTextFileConversion(Conversion):
+    '''Class converting data read from file as list of strings to propor objects'''
 
     destinations_text_file = TextFile("DESTINATIONS.txt")
-    refuelings_text_file = TextFile("REFUELINGS.txt")
-    trips_text_file = TextFile("TRIPS.txt")
     destinations: DestinationRepository
-    # refuelings: RefuelingRepository
-    # trips: TripsRepository
 
-    def destination_conversion(self):
+    def convert(self) -> None:
         destinations = self.destinations_text_file.read()
         for line in destinations:
             data = line.split('\t')
@@ -163,7 +170,46 @@ class Conversion:
             distance = float(data[3])
             new_destinations = Destination(id, name, location, distance)
             self.destinations.add(new_destinations)
-    
+
+
+@dataclass
+class TripTextFileConversion(Conversion):
+    '''Class converting data read from file as list of strings to propor objects'''
+
+    trips_text_file = TextFile("TRIPS.txt")
+    trips: TripsRepository
+
+    def convert(self) -> None:
+        trips = self.trips_text_file.read()
+        for line in trips:
+            data = line.split('\t')
+            id = int(data[0])
+            date = datetime(data[1])
+            destination_id = int(data[2])
+            milage = float(data[3])
+            new_trip = Trip(id, date, destination_id, milage)
+            self.trips.add(new_trip)
+
+
+@dataclass
+class RefuelingTextFileConversion(Conversion):
+    '''Class converting data read from file as list of strings to propor objects'''
+
+    refuelings_text_file = TextFile("REFUELINGS.txt")
+    refuelings: RefuelingRepository
+
+    def convert(self) -> None:
+        refuelings = self.refuelings_text_file.read()
+        for line in refuelings:
+            data = line.split('\t')
+            id = int(data[0])
+            date = datetime(data[1])
+            volume = float(data[2])
+            destination_id = int(data[3])
+            new_refueling = Refueling(id, date, volume, destination_id)
+            self.refuelings.add(new_refueling)
+
+
 
 def main():
     #  Only for testing
@@ -189,7 +235,7 @@ def main():
     text_file = TextFile("DESTINATIONS.txt")
     output = text_file.read()
     # print(output)
-    conversion = Conversion(destinations=destinations)
+    conversion = TextFileConversion(destinations=destinations)
     conversion.destination_conversion()
     for destination in destinations.elements_list:
         print(destination)
