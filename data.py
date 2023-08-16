@@ -56,6 +56,7 @@ class Trip:
 @dataclass
 class Refueling:
     '''Class representing one refueling.'''
+
     id: int
     date: datetime
     volume: float
@@ -68,6 +69,7 @@ class Refueling:
 @dataclass
 class TextFile(DataStorage):
     ''' Subclass of DataStorage to manipulate data saved in .txt file'''
+
     file_name: str
 
     def open_file(self, mode="r"):
@@ -101,6 +103,9 @@ class Repository(ABC):
 
     def __init__(self) -> None:
         self.elements_list: list[self.ElementType] = []
+
+    def __iter__(self):
+        return iter(self.elements_list)
 
     def add(self, new_element: 'Self.ElementType') -> None:
         self.elements_list.append(new_element)
@@ -211,35 +216,33 @@ class RefuelingTextFileConversion(Conversion):
 
 
 
-def main():
-    #  Only for testing
-    '''destination_1 = Destination(0, "Dest_1", "Location_1", 1000)
-    destination_2 = Destination(1, "Dest_2", "Location_2", 2000)
-    destination_3 = Destination(2, "Dest_3", "Location_3", 3000)'''
-    destinations = DestinationRepository()
-    '''destinations.add(destination_1)
-    destinations.add(destination_2)
-    destinations.add(destination_3)
-    for destination in destinations.elements_list:
-        print(destination)
-    destinations.delete(destination_1)
-    print("DELETED")
-    for destination in destinations.elements_list:
-        print(destination)
-    destination_1 = Destination(1, "Dest_2+", "Location_2+", 2001)
-    destinations.update(destination_1)
-    print("Updated")
-    for destination in destinations.elements_list:
-        print(destination)
-        '''
-    text_file = TextFile("DESTINATIONS.txt")
-    output = text_file.read()
-    # print(output)
-    conversion = TextFileConversion(destinations=destinations)
-    conversion.destination_conversion()
-    for destination in destinations.elements_list:
-        print(destination)
+#  Only for testing
+'''destination_1 = Destination(0, "Dest_1", "Location_1", 1000)
+destination_2 = Destination(1, "Dest_2", "Location_2", 2000)
+destination_3 = Destination(2, "Dest_3", "Location_3", 3000)'''
+destinations = DestinationRepository()
+refuelings = RefuelingRepository()
+trips = TripsRepository()
+'''destinations.add(destination_1)
+destinations.add(destination_2)
+destinations.add(destination_3)
+for destination in destinations.elements_list:
+    print(destination)
+destinations.delete(destination_1)
+print("DELETED")
+for destination in destinations.elements_list:
+    print(destination)
+destination_1 = Destination(1, "Dest_2+", "Location_2+", 2001)
+destinations.update(destination_1)
+print("Updated")
+for destination in destinations.elements_list:
+    print(destination)
+    '''
+text_file = TextFile("DESTINATIONS.txt")
+output = text_file.read()
+# print(output)
+conversion = DestinationTextFileConversion(destinations=destinations)
+conversion.convert()
+#for destination in destinations.elements_list:
+#   print(destination)
 
-
-if __name__ == "__main__":
-    main()
