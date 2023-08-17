@@ -1,3 +1,7 @@
+'''
+Module storing all custom errros
+'''
+
 class OptionValidationError(BaseException):
     '''Custom error to handle validation'''
     def __init__(self, user_input, options: dict) -> None:

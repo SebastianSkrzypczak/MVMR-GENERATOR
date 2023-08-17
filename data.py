@@ -3,6 +3,13 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Self
 
+'''
+Module where all classes representing data are located.
+There are:
+-classes representing single object,
+-repositories handling data management,
+-classes to handle text files as data storage.
+'''
 
 class DataStorage(ABC):
     '''Generic class to manipulate data.'''
@@ -77,8 +84,8 @@ class TextFile(DataStorage):
             return open(self.file_name, mode, encoding="utf-8")
         except FileNotFoundError as e:
             raise FileNotFoundError(f'File now found error {e}')
-        except IOError as e:
-            raise IOError(f"File opening error {e}")
+        except IOError as error:
+            raise IOError(f"File opening error {eerror}")
 
     def create(self, new_data) -> None:
         self.read()
@@ -215,34 +222,10 @@ class RefuelingTextFileConversion(Conversion):
             self.refuelings.add(new_refueling)
 
 
-
-#  Only for testing
-'''destination_1 = Destination(0, "Dest_1", "Location_1", 1000)
-destination_2 = Destination(1, "Dest_2", "Location_2", 2000)
-destination_3 = Destination(2, "Dest_3", "Location_3", 3000)'''
 destinations = DestinationRepository()
 refuelings = RefuelingRepository()
 trips = TripsRepository()
-'''destinations.add(destination_1)
-destinations.add(destination_2)
-destinations.add(destination_3)
-for destination in destinations.elements_list:
-    print(destination)
-destinations.delete(destination_1)
-print("DELETED")
-for destination in destinations.elements_list:
-    print(destination)
-destination_1 = Destination(1, "Dest_2+", "Location_2+", 2001)
-destinations.update(destination_1)
-print("Updated")
-for destination in destinations.elements_list:
-    print(destination)
-    '''
 text_file = TextFile("DESTINATIONS.txt")
 output = text_file.read()
-# print(output)
 conversion = DestinationTextFileConversion(destinations=destinations)
 conversion.convert()
-#for destination in destinations.elements_list:
-#   print(destination)
-

@@ -2,10 +2,9 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 import errors
 
-
-class Menu(ABC):
-    pass
-
+'''
+Module responsible for all kinds of data validation
+'''
 
 class AbstractValidation(ABC):
     '''Generic class to handle validation process'''

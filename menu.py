@@ -4,6 +4,10 @@ import data
 import validation
 import errors
 
+'''
+Module responsible for UI.
+'''
+
 
 class UserInput:
 
@@ -102,7 +106,7 @@ class Menu(UserInput):
         super().__init__(destinations, refuelings, trips)
         self.methods = self.get_methods_as_dict()
 
-    def get_methods_as_dict(self) -> list:
+    def get_methods_as_dict(self) -> list[str, object]:
         '''Function adding all user methods to dictionary with 
         method's name as key and object adress as value'''
 
@@ -119,10 +123,14 @@ class Menu(UserInput):
         return methods
 
     def index(self) -> None:
-        print("\nWelcome in MVMR-GENERATOR!\n")
-        for method in self.methods:
-            print(method[0])
-        print('\n')
+        while True:
+            print("\nWelcome in MVMR-GENERATOR!\n")
+            for method in self.methods:
+                print(method[0])
+            print('\n')
+            choose = int(input('Chose function\n'))-1
+            # TODO: validation!!!
+            self.methods[choose][1](self)
 
     def _1_generate_new_MVMR(self):
         pass
@@ -134,7 +142,7 @@ class Menu(UserInput):
             else:
                 new_destination_id = 1
             print(f'New destiantions ID: {new_destination_id}')
-            new_destination_name = self.name_input(self.destinations, exist=True)
+            new_destination_name = self.name_input(self.destinations)
             new_destination_distance = self.distance_input()
             new_destination_location = self.location_input()
             new_destination = data.Destination(
@@ -191,8 +199,6 @@ class Menu(UserInput):
 def main():
     menu = Menu(destinations=data.destinations, refuelings=data.refuelings, trips=data.trips)
     menu.index()
-    menu._3_add_new_refueling()
-    menu._4_show_all_refuelings()
 
 
 if __name__ == "__main__":
