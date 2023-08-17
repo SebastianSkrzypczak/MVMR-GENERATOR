@@ -60,7 +60,7 @@ class Refueling:
     id: int
     date: datetime
     volume: float
-    destination_id: int
+    destination: Destination
 
     def __str__(self) -> str:
         return f'{self.id}\t{self.date}\t{self.volume}\t{self.destination.name}'
