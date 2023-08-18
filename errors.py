@@ -1,6 +1,8 @@
+from tabulate import tabulate
 '''
 Module storing all custom errros
 '''
+
 
 class OptionValidationError(BaseException):
     '''Custom error to handle validation'''
@@ -23,10 +25,14 @@ class NameAllredyUsedError(BaseException):
         self.destinations = destinations
 
     def __str__(self) -> str:
-        message = ""
+        message = []
         for destination in self.destinations:
-            message += str(destination)
-        return f'\n name: {self.name} \n allredy used in \n {message}'
+            message.append(destination)
+        table = tabulate(message,
+                         headers=['ID', 'NAME', 'LOCATION', 'DISTANCE'],
+                         tablefmt='grid'
+                         )
+        return f'\n ERROR! Name: {self.name} allredy used in \n {table}'
 
 
 class IdNotFoundError(BaseException):
@@ -43,14 +49,14 @@ class NotADigitError(BaseException):
     '''Custom error to handle wrong type of input data'''
 
     def __str__(self) -> str:
-        return f'Input must be an integer!'
+        return 'Input must be an integer!'
 
 
 class DateFormatError(BaseException):
     '''Custom error to handle wrong format od date'''
 
     def __str__(self) -> str:
-        return f'\nIncorrect date format\n'
+        return '\nIncorrect date format\n'
 
 
 class NotInRangeError(BaseException):

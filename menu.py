@@ -17,34 +17,34 @@ class UserInput:
         self.trips: data.TripsRepository = trips
 
     def options_input(self, options: dict, message: str) -> object:
-        options_validation = validation.TextValidation
+        options_validation = validation.TextValidation()
         while True:
             user_input = input(f'{message}')
             try:
-                options_validation.check(user_input)
-                options[user_input]
+                options_validation.check(input_data=user_input, options=options)
+                options[user_input.upper()]
                 break
             except errors.OptionValidationError as error:
                 print(error)
-        return options[user_input]
+        return options[user_input.upper()]
 
     def name_input(self, options) -> str:
-        name_validation = validation.NameValidation(options=options)
+        name_validation = validation.NameValidation()
         while True:
             name = input("\nType new name: ")
             try:
-                name_validation.check(given_name=name)
+                name_validation.check(given_name=name, options=options)
                 break
             except errors.NameAllredyUsedError as error:
                 print(error)
         return name
 
     def id_input(self, options) -> data.Refueling:
-        id_validation = validation.IdValidation(options=options)
+        id_validation = validation.IdValidation()
         while True:
             id = input("\nType destination ID\n")
             try:
-                id_validation.check(id)
+                id_validation.check(id, options=options)
                 break
             except errors.IdNotFoundError as error:
                 print(error)
@@ -52,8 +52,9 @@ class UserInput:
 
     def distance_input(self) -> float:
         distance_validation = validation.InRangeValidation(
-            max_distance=1000,
-            min_distance=0)
+            max_value=1000,
+            min_value=0
+        )
         while True:
             new_destination_distance = (input(
                 "Type new destination's distance: "
@@ -107,7 +108,7 @@ class Menu(UserInput):
         self.methods = self.get_methods_as_dict()
 
     def get_methods_as_dict(self) -> list[str, object]:
-        '''Function adding all user methods to dictionary with 
+        '''Function adding all user methods to dictionary with
         method's name as key and object adress as value'''
 
         methods = []
@@ -184,7 +185,14 @@ class Menu(UserInput):
         self.refuelings.add(new_refueling)
 
     def _4_show_all_refuelings(self):
-        print(tabulate(self.refuelings,
+        all = [
+               [refueling.id,
+                refueling.date,
+                refueling.volume,
+                refueling.destination.name]
+               for refueling in self.refuelings
+               ]
+        print(tabulate(all,
                        headers=['ID', 'DATE', 'VOLUME', 'DESTINATION'],
                        tablefmt='grid'
                        ))

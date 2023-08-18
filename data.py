@@ -11,6 +11,7 @@ There are:
 -classes to handle text files as data storage.
 '''
 
+
 class DataStorage(ABC):
     '''Generic class to manipulate data.'''
 
@@ -85,12 +86,12 @@ class TextFile(DataStorage):
         except FileNotFoundError as e:
             raise FileNotFoundError(f'File now found error {e}')
         except IOError as error:
-            raise IOError(f"File opening error {eerror}")
+            raise IOError(f"File opening error {error}")
 
     def create(self, new_data) -> None:
         self.read()
         with self.open_file(mode="a") as file:
-            file.write(new_data + '\n') 
+            file.write(new_data + '\n')
 
     def read(self) -> list[str]:
         with self.open_file() as file:
