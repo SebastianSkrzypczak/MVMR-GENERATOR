@@ -6,12 +6,12 @@ import errors
 Module responsible for all kinds of data validation
 '''
 
+
 class AbstractValidation(ABC):
     '''Generic class to handle validation process'''
 
-    def __init__(self, options=[]) -> None:
+    def __init__(self) -> None:
         super().__init__()
-        self.options: dict = options
 
     @abstractmethod
     def check(self, input_data):
@@ -21,12 +21,12 @@ class AbstractValidation(ABC):
 class TextValidation(AbstractValidation):
     '''Class to handle text validation process'''
 
-    def check(self, input_data: str):
+    def check(self, input_data: str, options: dict):
         input_data = input_data.capitalize()
-        if input_data in self.options:
-            return self.options[input_data]
+        if input_data in options:
+            return options[input_data]
         else:
-            raise errors.OptionValidationError(input_data, self.options)
+            raise errors.OptionValidationError(input_data, options)
 
 
 class NumberValidation(AbstractValidation):
@@ -39,9 +39,9 @@ class NumberValidation(AbstractValidation):
 class NameValidation(AbstractValidation):
     '''Class to handle new destination values validation process'''
 
-    def check(self, given_name: str):
+    def check(self, given_name: str, options):
         names_list = [option
-                      for option in self.options
+                      for option in options
                       if given_name == option.name]
         if names_list:
             raise errors.NameAllredyUsedError(given_name, names_list)
@@ -50,8 +50,8 @@ class NameValidation(AbstractValidation):
 class IdValidation(AbstractValidation):
     '''Class to handle new destination values validation process'''
 
-    def check(self, given_id: str):
-        id_list = [option for option in self.options if given_id == str(option.id)]
+    def check(self, given_id: str, options):
+        id_list = [option for option in options if given_id == str(option.id)]
         if id_list == []:
             raise errors.IdNotFoundError(given_id)
 
