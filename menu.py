@@ -3,6 +3,7 @@ from datetime import datetime
 import data
 import validation
 import errors
+import script_
 
 '''
 Module responsible for UI.
@@ -134,7 +135,25 @@ class Menu(UserInput):
             self.methods[choose][1](self)
 
     def _1_generate_new_MVMR(self):
-        pass
+        settings = {
+                    'day_iteration': 10,
+                    'trip_iteration': 30,
+                    'factor': 15,
+                    'max_difference': 50
+                    }
+        date = datetime.today()
+        generator = script_.Generator(
+                                    self.destinations,
+                                    self.refuelings,
+                                    self.trips,
+                                    1000,
+                                    3000,
+                                    date,
+                                    settings
+                                    )
+        trips_list = generator.generate()
+        for trip in trips_list:
+            self.trips.add(trip)
 
     def _2_add_new_destination(self) -> None:
         while True:
@@ -202,11 +221,18 @@ class Menu(UserInput):
                        headers=['ID', 'NAME', 'LOCATION', 'DISTANCE'],
                        tablefmt='grid'
                        ))
+        
+    def _6_show_all_trips(self):
+        print(tabulate(self.trips,
+                       headers=['DATE', 'DESTINATION', 'MILAGE'],
+                       tablefmt='grid'
+                       ))
 
 
 def main():
     menu = Menu(destinations=data.destinations, refuelings=data.refuelings, trips=data.trips)
-    menu.index()
+    menu._1_generate_new_MVMR()
+    menu._6_show_all_trips()
 
 
 if __name__ == "__main__":

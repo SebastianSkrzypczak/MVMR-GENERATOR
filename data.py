@@ -194,13 +194,13 @@ class TripTextFileConversion(Conversion):
 
     def convert(self) -> None:
         trips = self.trips_text_file.read()
-        for line in trips:
+        for line in trips[4:]:
             data = line.split('\t')
-            id = int(data[0])
-            date = datetime(data[1])
-            destination_id = int(data[2])
-            milage = float(data[3])
-            new_trip = Trip(id, date, destination_id, milage)
+            # id = int(data[0])
+            date = datetime.strptime(data[0], "%Y/%M/%d")
+            destination = (destination for destination in destinations if destination.name == data[1])
+            milage = float(data[4])
+            new_trip = Trip(id, date, destination, milage)
             self.trips.add(new_trip)
 
 
@@ -212,21 +212,28 @@ class RefuelingTextFileConversion(Conversion):
     refuelings: RefuelingRepository
 
     def convert(self) -> None:
-        refuelings = self.refuelings_text_file.read()
-        for line in refuelings:
+        text = self.refuelings_text_file.read()
+        for line in text:
+            line = line[:-1]
             data = line.split('\t')
-            id = int(data[0])
-            date = datetime(data[1])
-            volume = float(data[2])
-            destination_id = int(data[3])
-            new_refueling = Refueling(id, date, volume, destination_id)
-            self.refuelings.add(new_refueling)
+            date = datetime.strptime(data[0], "%Y/%m/%d")
+            volume = float(data[1])
+            destination = next(destination for destination in destinations if destination.name == data[2])
+            new_refueling = Refueling(id=0, date=date, volume=volume, destination=destination)
+            refuelings.add(new_refueling)
 
+
+# TODO: not global!!
 
 destinations = DestinationRepository()
 refuelings = RefuelingRepository()
 trips = TripsRepository()
 text_file = TextFile("DESTINATIONS.txt")
 output = text_file.read()
-conversion = DestinationTextFileConversion(destinations=destinations)
-conversion.convert()
+destination_conversion = DestinationTextFileConversion(destinations=destinations)
+destination_conversion.convert()
+refueling_conversion = RefuelingTextFileConversion(refuelings)
+refueling_conversion.convert()
+trip_converstion = TripTextFileConversion(trips)
+trip_converstion.convert()
+
