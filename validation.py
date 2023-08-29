@@ -64,8 +64,6 @@ class InRangeValidation(AbstractValidation):
         self.min_value = min_value
 
     def check(self, distance: float):
-        if not distance.isdigit():
-            raise errors.NotADigitError()
         if not (self.min_value < float(distance) < self.max_value):
             raise errors.NotInRangeError(self.max_value, self.min_value)
 

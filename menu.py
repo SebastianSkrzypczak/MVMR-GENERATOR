@@ -6,18 +6,24 @@ import errors
 import script_
 
 '''
-Module responsible for UI.
+Module responsible for UI in command prompt.
 '''
 
 
 class UserInput:
+
+    '''A class handling user input validation and running process'''
 
     def __init__(self, destinations, refuelings, trips) -> None:
         self.destinations: data.DestinationRepository = destinations
         self.refuelings: data.RefuelingRepository = refuelings
         self.trips: data.TripsRepository = trips
 
-    def options_input(self, options: dict, message: str) -> object:
+    def options_input(self, options: list, message: str) -> object:
+
+        '''A function responsible for running
+          options from menu after input validation'''
+
         options_validation = validation.TextValidation()
         while True:
             user_input = input(f'{message}')
@@ -95,9 +101,19 @@ class UserInput:
             date_validation = validation.DateValidation()
             date = input(message)
             try:
-                date_validation.check(date)
-                break
+                date = date_validation.check(date)
+                return date
             except errors.DateFormatError as error:
+                print(error)
+
+    def milage_input(self, message: str, min_value=0.0, max_value=float('inf')) -> int:
+        milage_validation = validation.InRangeValidation(max_value, min_value)
+        while True:
+            user_input = int(input(message))
+            try:
+                milage_validation.check(user_input)
+                return user_input
+            except errors.NotInRangeError as error:
                 print(error)
 
 
@@ -106,9 +122,9 @@ class Menu(UserInput):
 
     def __init__(self, destinations, refuelings, trips) -> None:
         super().__init__(destinations, refuelings, trips)
-        self.methods = self.get_methods_as_dict()
+        self.methods: dict = self.get_methods_as_list()
 
-    def get_methods_as_dict(self) -> list[str, object]:
+    def get_methods_as_list(self) -> list[set]:
         '''Function adding all user methods to dictionary with
         method's name as key and object adress as value'''
 
@@ -120,18 +136,18 @@ class Menu(UserInput):
                 name = method.replace('_', ' ')
                 name = name[:3] + name[3].upper() + name[4:]
                 pointer = getattr(self.__class__, method)
-                user_method = [name, pointer]
-                methods.append(user_method)
+                method_set = (name, pointer)
+                methods.append(method_set)
         return methods
 
     def index(self) -> None:
         while True:
             print("\nWelcome in MVMR-GENERATOR!\n")
             for method in self.methods:
-                print(method[0])
-            print('\n')
+                print(f'{method[0]}\n')
+            # self.options_input(self.methods, 'Chose function\n')
             choose = int(input('Chose function\n'))-1
-            # TODO: validation!!!
+            # self.options_input(self.methods, '')
             self.methods[choose][1](self)
 
     def _1_generate_new_MVMR(self):
@@ -141,19 +157,38 @@ class Menu(UserInput):
                     'factor': 15,
                     'max_difference': 50
                     }
-        date = datetime.today()
+        date = self.date_input('Type start-date of MVMR (YYYY/MM/DD)\n')
+        if len(self.trips.elements_list) > 0:
+            previous_milage = self.trips.elements_list[-1].milage
+        else:
+            previous_milage = self.milage_input('Type last previous month milage\n')
+        current_milage = self.milage_input(
+                                          'Type current milage\n',
+                                          min_value=previous_milage
+                                          )
         generator = script_.Generator(
                                     self.destinations,
                                     self.refuelings,
                                     self.trips,
-                                    1000,
-                                    3000,
+                                    previous_milage,
+                                    current_milage,
                                     date,
                                     settings
                                     )
-        trips_list = generator.generate()
-        for trip in trips_list:
-            self.trips.add(trip)
+        generator.generate()
+        table = tabulate(generator.trips_list,
+                       headers=['DATE', 'DESTINATION', 'MILAGE'],
+                       tablefmt='grid'
+                       )
+        print(table)
+        save = self.options_input({'Y': True, 'N': False}, "Do You want to save MVMR?\n")
+        if save:
+            trips_file = data.TextFile("TRIPS.txt")
+            for trip in generator.trips_list:
+                self.trips.add(trip)
+                line = f'{trip.id}\t{trip.date}\t{trip.destination}\t{trip.milage}'
+                trips_file.create(line)
+
 
     def _2_add_new_destination(self) -> None:
         while True:
@@ -221,7 +256,7 @@ class Menu(UserInput):
                        headers=['ID', 'NAME', 'LOCATION', 'DISTANCE'],
                        tablefmt='grid'
                        ))
-        
+
     def _6_show_all_trips(self):
         print(tabulate(self.trips,
                        headers=['DATE', 'DESTINATION', 'MILAGE'],
@@ -231,8 +266,7 @@ class Menu(UserInput):
 
 def main():
     menu = Menu(destinations=data.destinations, refuelings=data.refuelings, trips=data.trips)
-    menu._1_generate_new_MVMR()
-    menu._6_show_all_trips()
+    menu.index()
 
 
 if __name__ == "__main__":

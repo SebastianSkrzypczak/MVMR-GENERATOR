@@ -4,8 +4,8 @@ from operator import attrgetter
 import random
 import data
 
-
 class Generator:
+
 
     def __init__(self,
                  desinations: data.DestinationRepository,
@@ -22,9 +22,9 @@ class Generator:
         self.month = int(start_date.strftime("%m"))
         self.year = int(start_date.strftime("%Y"))
         self.settings = settings
+        self.trips_list = []
 
-    def rewrite_refuelings(self):
-        trips_list = []
+    def rewrite_refuelings(self) -> int:
         used_range = 0
         for refueling in self.refuelings:
             date = int(refueling.date.strftime("%m"))
@@ -32,31 +32,29 @@ class Generator:
                 trip = data.Trip(
                     id=0,
                     date=refueling.date,
-                    destination=refueling.destination,
+                    destination=refueling.destination.name,
                     milage=refueling.destination.distance
                 ) 
-                trips_list.append(trip)
+                self.trips_list.append(trip)
                 used_range += trip.milage
-        return trips_list, used_range
+        return used_range
 
-    def generate_random_date(self):
+    def generate_random_date(self) -> datetime:
         days_in_month = monthrange(self.year, self.month)[1]
         random_day = random.randrange(1, days_in_month)
-        random_date = datetime.strptime(
-                f'{self.year}/{self.month}/{random_day}', "%Y/%m/%d"
-                )
+        random_date = datetime(self.year, self.month, random_day)
         return random_date
 
-    def generate(self):
+    def fill(self) -> None:
         range = self.current_milage - self.previous_milage
         iteration = 0
         while True:
-            trips_list, used_range = self.rewrite_refuelings()        
+            used_range = self.rewrite_refuelings()        
             current_day_iterations = 0
             while used_range < range:
                 if current_day_iterations < self.settings["day_iteration"]:
                     random_date = self.generate_random_date()
-                    if not any(True for trip in trips_list if trip.date == random_date):
+                    if not any(True for trip in self.trips_list if trip.date == random_date):
                         current_trip_iterations = 0
                         while True:
                             if current_trip_iterations < self.settings['trip_iteration']:
@@ -67,8 +65,13 @@ class Generator:
                                     start_index = self.settings['factor']
                                     stop_index = len(self.destinations.elements_list)-1
                                 random_destination = self.destinations.elements_list[random.randrange(start_index, stop_index)]
-                                random_trip = data.Trip(0, random_date, random_destination, milage=random_destination.distance)
-                                trips_list.append(random_trip)
+                                random_trip = data.Trip(
+                                                        0,
+                                                        random_date,
+                                                        random_destination.name,
+                                                        milage=random_destination.distance
+                                                       )
+                                self.trips_list.append(random_trip)
                                 used_range = used_range + float(random_trip.milage)
                                 current_trip_iterations += 1
                                 break
@@ -81,15 +84,24 @@ class Generator:
                 break
             else:
                 iteration += 1
-        sorted(trips_list, key=attrgetter('date')), iteration
-        return self.recalculate_milage(trips_list)
 
-    def recalculate_milage(self, trips_list):
-        last_mialge = self.previous_milage
-        for trip in trips_list:
-            trip.milage += last_mialge
-            last_mialge = trip.milage
-        return trips_list
+    def recalculate(self) -> None:
+        if len(self.trips.elements_list) != 0:
+            last_id = self.trips.elements_list[-1]
+        else:
+            last_id = 0
+        last_milage = self.previous_milage
+        for trip in self.trips_list:
+            trip.id = last_id+1
+            last_id += 1
+            trip.date = datetime.strftime(trip.date, "%Y/%m/%d")
+            trip.milage += last_milage
+            last_milage = trip.milage
+
+    def generate(self):
+        self.fill()
+        self.trips_list.sort(key=attrgetter('date'))
+        self.recalculate()
 
 
 def main():

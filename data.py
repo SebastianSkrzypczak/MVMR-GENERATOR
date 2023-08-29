@@ -98,8 +98,9 @@ class TextFile(DataStorage):
             output = file.readlines()
         return output
 
-    def update(self, old_data, new_data) -> None:
+    def update(self, new_data) -> None:
         with self.open_file(mode="w") as file:
+            print(new_data)
             file.write(new_data)
 
     def delete(self, data_to_delete) -> None:
@@ -194,12 +195,13 @@ class TripTextFileConversion(Conversion):
 
     def convert(self) -> None:
         trips = self.trips_text_file.read()
-        for line in trips[4:]:
+        for line in trips:
             data = line.split('\t')
-            # id = int(data[0])
-            date = datetime.strptime(data[0], "%Y/%M/%d")
-            destination = (destination for destination in destinations if destination.name == data[1])
-            milage = float(data[4])
+            id = int(data[0])
+            read_date = datetime.strptime(data[1], "%Y/%m/%d")
+            date = datetime.strftime(read_date, "%Y/%m/%d")
+            destination = next(destination.name for destination in destinations if destination.name == data[2])
+            milage = float(data[3])
             new_trip = Trip(id, date, destination, milage)
             self.trips.add(new_trip)
 
@@ -236,4 +238,3 @@ refueling_conversion = RefuelingTextFileConversion(refuelings)
 refueling_conversion.convert()
 trip_converstion = TripTextFileConversion(trips)
 trip_converstion.convert()
-
