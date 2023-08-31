@@ -96,14 +96,16 @@ class UserInput:
         location = input("\nType new destination's location: ")
         return location
 
-    def date_input(self, message) -> datetime:
+    def date_input(self, message, last_date) -> datetime:
         while True:
             date_validation = validation.DateValidation()
             date = input(message)
             try:
-                date = date_validation.check(date)
+                date = date_validation.check(date, last_date)
                 return date
             except errors.DateFormatError as error:
+                print(error)
+            except errors.TimelineError as error:
                 print(error)
 
     def milage_input(self, message: str, min_value=0.0, max_value=float('inf')) -> int:
@@ -157,15 +159,18 @@ class Menu(UserInput):
                     'factor': 15,
                     'max_difference': 50
                     }
-        date = self.date_input('Type start-date of MVMR (YYYY/MM/DD)\n')
-        if len(self.trips.elements_list) > 0:
-            previous_milage = self.trips.elements_list[-1].milage
+        
+        if len(self.trips.elements) > 0: 
+            previous_milage = self.trips.elements[-1].milage
+            last_date = datetime.strptime(self.trips.elements[-1].date, '%Y/%m/%d')
         else:
             previous_milage = self.milage_input('Type last previous month milage\n')
+            last_date = datetime.min
         current_milage = self.milage_input(
                                           'Type current milage\n',
                                           min_value=previous_milage
                                           )
+        date = self.date_input('Type start-date of MVMR (YYYY/MM/DD)\n', last_date)
         generator = script_.Generator(
                                     self.destinations,
                                     self.refuelings,
@@ -192,8 +197,8 @@ class Menu(UserInput):
 
     def _2_add_new_destination(self) -> None:
         while True:
-            if len(self.destinations.elements_list) > 0:
-                new_destination_id = int(self.destinations.elements_list[-1].id+1)
+            if len(self.destinations.elements) > 0:
+                new_destination_id = int(self.destinations.elements[-1].id+1)
             else:
                 new_destination_id = 1
             print(f'New destiantions ID: {new_destination_id}')
@@ -221,8 +226,8 @@ class Menu(UserInput):
         self.destinations.add(new_destination)
 
     def _3_add_new_refueling(self) -> None:
-        if len(self.refuelings.elements_list) > 0:
-            new_refueling_id = self.refuelings.elements_list[-1].id
+        if len(self.refuelings.elements) > 0:
+            new_refueling_id = self.refuelings.elements[-1].id
         else:
             new_refueling_id = 1
         print(f'New refueling ID: {new_refueling_id}\n')

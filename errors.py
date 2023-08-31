@@ -67,3 +67,12 @@ class NotInRangeError(BaseException):
 
     def __str__(self) -> str:
         return f'Input must be between {self.min_value} and {self.max_value}!'
+    
+
+class TimelineError(BaseException):
+    '''Custom error to handle date timeline validation'''
+    def __init__(self, last_date) -> None:
+        self.last_date = last_date
+
+    def __str__(self) -> str:
+        return f'Date must be newer than last recorded trip date: {self.last_date}'

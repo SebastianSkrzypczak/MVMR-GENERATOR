@@ -8,9 +8,9 @@ class Generator:
 
 
     def __init__(self,
-                 desinations: data.DestinationRepository,
-                 refuelings: data.RefuelingRepository,
-                 trips: data.TripsRepository,
+                 desinations,
+                 refuelings,
+                 trips,
                  previous_milage: int,
                  current_milage: int, start_date: datetime,
                  settings: dict) -> None:
@@ -63,8 +63,8 @@ class Generator:
                                     stop_index = self.settings['factor']
                                 else:
                                     start_index = self.settings['factor']
-                                    stop_index = len(self.destinations.elements_list)-1
-                                random_destination = self.destinations.elements_list[random.randrange(start_index, stop_index)]
+                                    stop_index = len(self.destinations.elements)-1
+                                random_destination = self.destinations.elements[random.randrange(start_index, stop_index)]
                                 random_trip = data.Trip(
                                                         0,
                                                         random_date,
@@ -87,7 +87,7 @@ class Generator:
 
     def recalculate(self) -> None:
         if len(self.trips.elements_list) != 0:
-            last_id = self.trips.elements_list[-1]
+            last_id = int(self.trips.elements_list[-1].id)
         else:
             last_id = 0
         last_milage = self.previous_milage

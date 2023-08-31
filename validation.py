@@ -1,10 +1,13 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 import errors
+import logging
 
 '''
 Module responsible for all kinds of data validation
 '''
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class AbstractValidation(ABC):
@@ -73,13 +76,21 @@ class DateValidation(AbstractValidation):
     def __init__(self) -> None:
         self.formats = ["%Y.%m.%d", "%Y,%m,%d", "%Y/%m/%d", "%Y-%m-%d"]
 
-    def check(self, date) -> datetime:
+    def check(self, date, last_date: datetime) -> datetime:
         not_correct_format = True
         for format in self.formats:
             try:
                 date_obj = datetime.strptime(date, format)
-                return date_obj
+                not_correct_format = False
+                break
             except ValueError:
                 pass
         if not_correct_format:
             raise errors.DateFormatError
+        logging.debug(last_date)
+        logging.debug(date_obj)
+        if date_obj > last_date:
+            return date_obj
+        else:
+            raise errors.TimelineError(last_date)
+        
