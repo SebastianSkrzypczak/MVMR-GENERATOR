@@ -3,16 +3,17 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Self
 
-'''
+"""
 Module where all classes representing data are located.
 There are:
 -classes representing single object,
 -repositories handling data management,
 -classes to handle text files as data storage.
-'''
+"""
+
 
 class DataStorage(ABC):
-    '''Generic class to manipulate data.'''
+    """Generic class to manipulate data."""
 
     @abstractmethod
     def create(new_data):
@@ -32,50 +33,8 @@ class DataStorage(ABC):
 
 
 @dataclass
-class Destination:
-    '''Class representing one destination.'''
-
-    id: int
-    name: str
-    location: str
-    distance: float
-
-    def __str__(self) -> str:
-        return f'{self.id}\t{self.name}\t{self.location}\t{self.distance}'
-
-
-@dataclass
-class Trip:
-    '''Class representing one trip.'''
-
-    id: int
-    date: datetime
-    destination: Destination
-    milage: float = 0
-
-    def calculate_milage(self, current_milage) -> None:
-        pass
-
-    def __str__(self) -> str:
-        return f'{self.id}\t{self.date}\t{self.destination.name}\t{self.destination.distance}\t{self.destination.location}\t{self.milage}'
-
-
-@dataclass
-class Refueling:
-    '''Class representing one refueling.'''
-
-    id: int
-    date: datetime
-    volume: float
-    destination: Destination
-
-    def __str__(self) -> str:
-        return f'{self.id}\t{self.date}\t{self.volume}\t{self.destination.name}'
-
-
-@dataclass
 class TextFile(DataStorage):
-    ''' Subclass of DataStorage to manipulate data saved in .txt file'''
+    """Subclass of DataStorage to manipulate data saved in .txt file"""
 
     file_name: str
 
@@ -83,14 +42,14 @@ class TextFile(DataStorage):
         try:
             return open(self.file_name, mode, encoding="utf-8")
         except FileNotFoundError as e:
-            raise FileNotFoundError(f'File now found error {e}')
+            raise FileNotFoundError(f"File now found error {e}")
         except IOError as error:
-            raise IOError(f"File opening error {eerror}")
+            raise IOError(f"File opening error {error}")
 
     def create(self, new_data) -> None:
         self.read()
         with self.open_file(mode="a") as file:
-            file.write(new_data + '\n') 
+            file.write(new_data + "\n")
 
     def read(self) -> list[str]:
         with self.open_file() as file:
@@ -106,7 +65,7 @@ class TextFile(DataStorage):
 
 
 class Repository(ABC):
-    '''Generic class to represet datasets.'''
+    """Generic class to represet datasets."""
 
     def __init__(self) -> None:
         self.elements_list: list[self.ElementType] = []
@@ -114,13 +73,13 @@ class Repository(ABC):
     def __iter__(self):
         return iter(self.elements_list)
 
-    def add(self, new_element: 'Self.ElementType') -> None:
+    def add(self, new_element: "Self.ElementType") -> None:
         self.elements_list.append(new_element)
 
-    def update(self, updated_element: 'Self.ElementType') -> None:
+    def update(self, updated_element: "Self.ElementType") -> None:
         self.elements_list[updated_element.id] = updated_element
 
-    def delete(self, deleted_element: 'Self.ElementType') -> None:
+    def delete(self, deleted_element: "Self.ElementType") -> None:
         self.elements_list.pop(deleted_element.id)
         self.renumerate()
 
@@ -131,7 +90,8 @@ class Repository(ABC):
 
 @dataclass
 class DestinationRepository(Repository):
-    '''Class to represent all destinations and to manage them.'''
+    """Class to represent all destinations and to manage them."""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -140,7 +100,8 @@ class DestinationRepository(Repository):
 
 @dataclass
 class RefuelingRepository(Repository):
-    '''Class to represent all refuelings and to manage them.'''
+    """Class to represent all refuelings and to manage them."""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -149,7 +110,8 @@ class RefuelingRepository(Repository):
 
 @dataclass
 class TripsRepository(Repository):
-    '''Class to represent all trips and to manage them.'''
+    """Class to represent all trips and to manage them."""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -158,7 +120,7 @@ class TripsRepository(Repository):
 
 @dataclass
 class Conversion(ABC):
-    '''Generic conversion class for converting data from all kind of sources to objects'''
+    """Generic conversion class for converting data from all kind of sources to objects"""
 
     @abstractmethod
     def convert(self):
@@ -167,7 +129,7 @@ class Conversion(ABC):
 
 @dataclass
 class DestinationTextFileConversion(Conversion):
-    '''Class converting data read from file as list of strings to propor objects'''
+    """Class converting data read from file as list of strings to propor objects"""
 
     destinations_text_file = TextFile("DESTINATIONS.txt")
     destinations: DestinationRepository
@@ -175,7 +137,7 @@ class DestinationTextFileConversion(Conversion):
     def convert(self) -> None:
         destinations = self.destinations_text_file.read()
         for line in destinations:
-            data = line.split('\t')
+            data = line.split("\t")
             id = int(data[0])
             name = data[1]
             location = data[2]
@@ -186,7 +148,7 @@ class DestinationTextFileConversion(Conversion):
 
 @dataclass
 class TripTextFileConversion(Conversion):
-    '''Class converting data read from file as list of strings to propor objects'''
+    """Class converting data read from file as list of strings to propor objects"""
 
     trips_text_file = TextFile("TRIPS.txt")
     trips: TripsRepository
@@ -194,7 +156,7 @@ class TripTextFileConversion(Conversion):
     def convert(self) -> None:
         trips = self.trips_text_file.read()
         for line in trips:
-            data = line.split('\t')
+            data = line.split("\t")
             id = int(data[0])
             date = datetime(data[1])
             destination_id = int(data[2])
@@ -205,7 +167,7 @@ class TripTextFileConversion(Conversion):
 
 @dataclass
 class RefuelingTextFileConversion(Conversion):
-    '''Class converting data read from file as list of strings to propor objects'''
+    """Class converting data read from file as list of strings to propor objects"""
 
     refuelings_text_file = TextFile("REFUELINGS.txt")
     refuelings: RefuelingRepository
@@ -213,7 +175,7 @@ class RefuelingTextFileConversion(Conversion):
     def convert(self) -> None:
         refuelings = self.refuelings_text_file.read()
         for line in refuelings:
-            data = line.split('\t')
+            data = line.split("\t")
             id = int(data[0])
             date = datetime(data[1])
             volume = float(data[2])
