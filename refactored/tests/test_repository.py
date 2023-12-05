@@ -23,24 +23,24 @@ class Test_TextRepository:
         assert result == correct_result
 
     def test_update(self):
-        old_item = model.Destination(1, "DEST-1", "LOCATION-1", "586")
-        new_item = model.Destination(2, "DEST-2", "LOCATION-2", "434")
+        old_item_id = "1"
+        new_item = model.Destination("2", "DEST-2", "LOCATION-2", "434")
         txt_repository = repository.TxtRepository(StringIO(""), model.Destination)
         txt_repository.content = [
-            model.Destination(2, "DEST-2", "LOCATION-2", "434"),
-            model.Destination(1, "DEST-1", "LOCATION-1", "586"),
+            model.Destination("2", "DEST-2", "LOCATION-2", "434"),
+            model.Destination("1", "DEST-1", "LOCATION-1", "586"),
         ]
-        txt_repository.update(old_item, new_item)
+        txt_repository.update(old_item_id, new_item)
         assert str(new_item) == str(txt_repository.content[1])
 
     def test_delete(self):
-        item_to_delete = model.Destination(1, "DEST-1", "LOCATION-1", "586")
+        item_to_delete_id = "1"
         txt_repository = repository.TxtRepository(StringIO(""), model.Destination)
         txt_repository.content = [
-            model.Destination(2, "DEST-2", "LOCATION-2", "434"),
-            model.Destination(1, "DEST-1", "LOCATION-1", "586"),
+            model.Destination("2", "DEST-2", "LOCATION-2", "434"),
+            model.Destination("1", "DEST-1", "LOCATION-1", "586"),
         ]
-        txt_repository.delete(item_to_delete)
+        txt_repository.delete(item_to_delete_id)
         assert len(txt_repository.content) == 1 and str(
             txt_repository.content[0]
-        ) == str(model.Destination(2, "DEST-2", "LOCATION-2", "434"))
+        ) == str(model.Destination("2", "DEST-2", "LOCATION-2", "434"))

@@ -34,9 +34,9 @@ class TxtRepository(ABC):
         item_instace = self.item_type(**item_data)
         return item_instace
 
-    def __find_item(self, item: model.Item) -> model.Item | None:
+    def __find_item(self, item_id: str) -> model.Item | None:
         content_item = next(
-            content_item for content_item in self.content if content_item.id == item.id
+            content_item for content_item in self.content if content_item.id == item_id
         )
         return content_item
 
@@ -52,8 +52,8 @@ class TxtRepository(ABC):
             item_instance = self.__create_item_instance(data)
             self.content.append(item_instance)
 
-    def update(self, old_item: model.Item, new_item: model.Item):
-        content_item = self.__find_item(old_item)
+    def update(self, old_item_id: str, new_item: model.Item):
+        content_item = self.__find_item(old_item_id)
         if content_item:
             for attr_name in dir(content_item):
                 if not callable(
