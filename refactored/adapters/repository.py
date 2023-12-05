@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from domain import model
 from typing import TextIO
+from icecream import ic
 
 
 class AbstractRepository(ABC):
@@ -45,7 +46,6 @@ class TxtRepository(ABC):
     def read(self):
         self.content = []
         keys = self.file.readline().strip().split()
-
         for line in self.file.readlines():
             values = line.strip().split("	")
             data = dict(zip(keys, values))
@@ -60,8 +60,12 @@ class TxtRepository(ABC):
                     getattr(content_item, attr_name)
                 ) and not attr_name.startswith("__"):
                     setattr(content_item, attr_name, getattr(new_item, attr_name))
+        else:
+            raise KeyError
 
     def delete(self, item_to_delete: None):
         content_item = self.__find_item(item_to_delete)
         if content_item:
             self.content.remove(content_item)
+        else:
+            raise KeyError
