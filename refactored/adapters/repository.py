@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from domain import model
 from typing import TextIO
+from icecream import ic
 
 
 class AbstractRepository(ABC):
@@ -33,9 +34,9 @@ class TxtRepository(ABC):
         item_instace = self.item_type(**item_data)
         return item_instace
 
-    def __find_item(self, item: model.Item) -> model.Item | None:
+    def __find_item(self, item_id: str) -> model.Item | None:
         content_item = next(
-            content_item for content_item in self.content if content_item.id == item.id
+            content_item for content_item in self.content if content_item.id == item_id
         )
         return content_item
 
@@ -45,23 +46,26 @@ class TxtRepository(ABC):
     def read(self):
         self.content = []
         keys = self.file.readline().strip().split()
-
         for line in self.file.readlines():
             values = line.strip().split("	")
             data = dict(zip(keys, values))
             item_instance = self.__create_item_instance(data)
             self.content.append(item_instance)
 
-    def update(self, old_item: model.Item, new_item: model.Item):
-        content_item = self.__find_item(old_item)
+    def update(self, old_item_id: str, new_item: model.Item):
+        content_item = self.__find_item(old_item_id)
         if content_item:
             for attr_name in dir(content_item):
                 if not callable(
                     getattr(content_item, attr_name)
                 ) and not attr_name.startswith("__"):
                     setattr(content_item, attr_name, getattr(new_item, attr_name))
+        else:
+            raise KeyError
 
     def delete(self, item_to_delete: None):
         content_item = self.__find_item(item_to_delete)
         if content_item:
             self.content.remove(content_item)
+        else:
+            raise KeyError
