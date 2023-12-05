@@ -4,7 +4,7 @@ from unittest.mock import patch, mock_open
 from io import StringIO
 
 
-class Test_TextRepository:
+class Test_TxtRepository:
     def test_read(self):
         data = """id  name    location    distance
 1	DEST-1	LOCATION-1	586
@@ -21,6 +21,16 @@ class Test_TextRepository:
             txt_repository.read()
             result = list(map(str, txt_repository.content))
         assert result == correct_result
+
+    def test_add_successfull(self):
+        new_item = model.Destination("4", "DEST-4", "LOCATION-4", "434")
+        txt_repository = repository.TxtRepository(StringIO(""), model.Destination)
+        txt_repository.content = [
+            model.Destination("2", "DEST-2", "LOCATION-2", "434"),
+            model.Destination("1", "DEST-1", "LOCATION-1", "586"),
+        ]
+        txt_repository.add(new_item)
+        assert txt_repository.new_items[-1] == new_item
 
     def test_update(self):
         old_item_id = "1"

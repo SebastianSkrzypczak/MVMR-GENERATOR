@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from domain import model
 from typing import TextIO
-from icecream import ic
 
 
 class AbstractRepository(ABC):
@@ -28,6 +27,7 @@ class TxtRepository(ABC):
         self.file = file
         self.content: list[model.Item] = None
         self.new_items: list[model.Item] = []
+        self.header = None
         super().__init__()
 
     def __create_item_instance(self, item_data: dict) -> model.Item:
@@ -35,17 +35,24 @@ class TxtRepository(ABC):
         return item_instace
 
     def __find_item(self, item_id: str) -> model.Item | None:
-        content_item = next(
-            content_item for content_item in self.content if content_item.id == item_id
-        )
+        try:
+            content_item = next(
+                content_item
+                for content_item in self.content
+                if content_item.id == item_id
+            )
+        except StopIteration:
+            raise StopIteration
         return content_item
 
     def add(self, item: model.Item):
-        self.new_items.append(item)
+        if not any(True for content_item in self.content if content_item.id == item.id):
+            self.new_items.append(item)
 
     def read(self):
         self.content = []
-        keys = self.file.readline().strip().split()
+        self.header = self.file.readline()
+        keys = self.header.strip().split()
         for line in self.file.readlines():
             values = line.strip().split("	")
             data = dict(zip(keys, values))

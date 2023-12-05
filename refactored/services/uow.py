@@ -1,7 +1,6 @@
 from adapters import repository
 from abc import ABC, abstractmethod
 from domain import model
-from icecream import ic
 
 
 class AbstractUnitOfWork(ABC):
@@ -40,15 +39,17 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         for item in self.txt_repository.content:
             new_content.append(str(item))
         with open(self.file_path, "w") as file:
-            file.writelines(new_content)
+            file.write(self.txt_repository.header)
+            file.writelines(line + "\n" for line in new_content)
 
     def rollback(self):
-        self.txt_repository = None
-        with open(self.file_path, "w") as file:
-            file.write(self.backup_content)
+        self.txt_repository.content = self.backup_content
+        self.commit()
 
     def __exit__(self, exttype: Exception, exc_value, traceback):
         if not exttype:
+            if self.txt_repository.new_items:
+                self.txt_repository.content.append(self.txt_repository.new_items)
             self.commit()
         else:
             self.rollback()
