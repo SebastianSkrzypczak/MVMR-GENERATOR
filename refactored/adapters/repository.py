@@ -1,9 +1,23 @@
 from abc import ABC, abstractmethod
 from domain import model
 from typing import TextIO
+<<<<<<< Updated upstream
+=======
+from datetime import datetime
+>>>>>>> Stashed changes
+from icecream import ic
 
 
 class AbstractRepository(ABC):
+    @abstractmethod
+    def __init__(self, file: TextIO, type: model.Item) -> None:
+        self.item_type = type
+        self.file = file
+        self.content: list[model.Item] = None
+        self.new_items: list[model.Item] = []
+        self.header = None
+        super().__init__()
+
     @abstractmethod
     def add(self):
         pass
@@ -56,9 +70,14 @@ class TxtRepository(ABC):
         for line in self.file.readlines():
             values = line.strip().split("	")
             data = dict(zip(keys, values))
+            if "date" in keys:
+                year, month, day = map(int, data["date"].split("/"))
+                data["date"] = datetime(year, month, day)
             item_instance = self.__create_item_instance(data)
             self.content.append(item_instance)
 
+    def update(self, old_item_id: str, new_item: model.Item):
+        content_item = self.__find_item(old_item_id)
     def update(self, old_item_id: str, new_item: model.Item):
         content_item = self.__find_item(old_item_id)
         if content_item:
@@ -69,10 +88,14 @@ class TxtRepository(ABC):
                     setattr(content_item, attr_name, getattr(new_item, attr_name))
         else:
             raise KeyError
+        else:
+            raise KeyError
 
     def delete(self, item_to_delete: None):
         content_item = self.__find_item(item_to_delete)
         if content_item:
             self.content.remove(content_item)
+        else:
+            raise KeyError
         else:
             raise KeyError
