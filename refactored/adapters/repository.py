@@ -1,10 +1,7 @@
 from abc import ABC, abstractmethod
 from domain import model
 from typing import TextIO
-<<<<<<< Updated upstream
-=======
 from datetime import datetime
->>>>>>> Stashed changes
 from icecream import ic
 
 
@@ -78,8 +75,6 @@ class TxtRepository(ABC):
 
     def update(self, old_item_id: str, new_item: model.Item):
         content_item = self.__find_item(old_item_id)
-    def update(self, old_item_id: str, new_item: model.Item):
-        content_item = self.__find_item(old_item_id)
         if content_item:
             for attr_name in dir(content_item):
                 if not callable(
@@ -88,14 +83,10 @@ class TxtRepository(ABC):
                     setattr(content_item, attr_name, getattr(new_item, attr_name))
         else:
             raise KeyError
-        else:
-            raise KeyError
 
     def delete(self, item_to_delete: None):
         content_item = self.__find_item(item_to_delete)
         if content_item:
             self.content.remove(content_item)
-        else:
-            raise KeyError
         else:
             raise KeyError
