@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from datetime import datetime
+from icecream import ic
 
 
 class Item(ABC):
@@ -45,7 +46,7 @@ class Refueling(Item):
     id: int
     date: datetime
     volume: float
-    destination: Destination
+    destination_id: str
 
     def __str__(self) -> str:
-        return f"{self.id}\t{self.date}\t{self.volume}\t{self.destination.name}"
+        return f"{self.id}\t{self.date}\t{self.volume}\t{self.destination_id}"
