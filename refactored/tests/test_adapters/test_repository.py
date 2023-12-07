@@ -26,21 +26,21 @@ class Test_TxtRepository:
 
     def test_read_refuelings(self):
         data = """id    date    volume  destination_id
-1\t2023/07/02\t50.0\t1
-2\t2023/07/10\t52.0\t1
-3\t2023/07/24\t48.0\t1"""
+1\t2023-07-02\t50.0\t1
+2\t2023-07-10\t52.0\t1
+3\t2023-07-24\t48.0\t1"""
         correct_result = [
-            str(model.Refueling("1", datetime(year=2023, month=7, day=2), 50.00, "1")),
-            str(model.Refueling("2", datetime(year=2023, month=7, day=10), 52.00, "1")),
-            str(model.Refueling("3", datetime(year=2023, month=7, day=24), 48.00, "1")),
+            str(model.Refueling("1", datetime(year=2023, month=7, day=2).date(), 50.00, "1")),
+            str(model.Refueling("2", datetime(year=2023, month=7, day=10).date(), 52.00, "1")),
+            str(model.Refueling("3", datetime(year=2023, month=7, day=24).date(), 48.00, "1")),
         ]
         with patch("builtins.open", new_callable=mock_open):
             io_object = StringIO(data)
             txt_repository = repository.TxtRepository(io_object, model.Refueling)
             txt_repository.read()
+            ic(txt_repository.content)
             result = list(map(str, txt_repository.content))
-        ic(result)
-        ic(correct_result)
+        
         assert result == correct_result
 
     def test_add_successfull(self):

@@ -27,19 +27,20 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         self.item_type = item_type
         self.file_path = rf"refactored\files\{str(item_type.__name__).upper()}S.txt"
         self.backup_content = None
-        self.txt_repository = None
+        self.repository = None
 
     def __enter__(self):
         with open(self.file_path, "r") as file:
-            self.txt_repository = repository.TxtRepository(file, self.item_type)
-            self.txt_repository.read()
-            self.backup_content = self.txt_repository.content
+            self.repository = repository.TxtRepository(file, self.item_type)
+            self.repository.read()
+            self.backup_content = self.repository.content
 
     def commit(self):
         new_content = []
-        for item in self.txt_repository.content:
+        for item in self.repository.content:
             new_content.append(str(item))
         with open(self.file_path, "w") as file:
+<<<<<<< Updated upstream
             file.writelines(new_content)
 
     def rollback(self):
@@ -49,6 +50,19 @@ class TxtUnitOfWork(AbstractUnitOfWork):
 
     def __exit__(self, exttype: Exception, exc_value, traceback):
         if not exttype:
+=======
+            file.write(self.repository.header)
+            file.writelines(line + "\n" for line in new_content)
+
+    def rollback(self):
+        self.repository.content = self.backup_content
+        self.commit()
+
+    def __exit__(self, exttype: Exception, exc_value, traceback):
+        if not exttype:
+            if self.repository.new_items:
+                self.repository.content.append(self.repository.new_items)
+>>>>>>> Stashed changes
             self.commit()
         else:
             self.rollback()

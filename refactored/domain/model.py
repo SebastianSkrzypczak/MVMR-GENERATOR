@@ -30,10 +30,10 @@ class Trip(Item):
     id: int
     date: datetime
     destination: Destination
-    milage: float = 0
+    milage: float = 0.0
 
-    def calculate_milage(self, current_milage) -> None:
-        pass
+    def calculate_milage(self, previous_milage: float) -> None:
+        self.milage = previous_milage + self.destination.distance
 
     def __str__(self) -> str:
         return f"{self.id}\t{self.date}\t{self.destination.name}\t{self.destination.distance}\t{self.destination.location}\t{self.milage}"
