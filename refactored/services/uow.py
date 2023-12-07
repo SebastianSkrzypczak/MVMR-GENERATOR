@@ -39,16 +39,6 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         for item in self.repository.content:
             new_content.append(str(item))
         with open(self.file_path, "w") as file:
-            file.write(self.txt_repository.header)
-            file.writelines(line + "\n" for line in new_content)
-
-    def rollback(self):
-        self.txt_repository.content = self.backup_content
-        self.commit()
-
-    def __exit__(self, exttype: Exception, exc_value, traceback):
-        if not exttype:
-=======
             file.write(self.repository.header)
             file.writelines(line + "\n" for line in new_content)
 
@@ -60,9 +50,6 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         if not exttype:
             if self.repository.new_items:
                 self.repository.content.append(self.repository.new_items)
->>>>>>> Stashed changes
-            if self.txt_repository.new_items:
-                self.txt_repository.content.append(self.txt_repository.new_items)
             self.commit()
         else:
             self.rollback()

@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 id  name    location    distance
 1	DEST-1	LOCATION-1	586
 2	DEST-2	LOCATION-2	434
@@ -31,4 +29,3 @@ id  name    location    distance
 28	DEST-28	LOCATION-28	25
 29	DEST-29	LOCATION-29	18
 30	DEST-30	LOCATION-30	12
->>>>>>> Stashed changes
