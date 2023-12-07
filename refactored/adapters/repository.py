@@ -65,11 +65,11 @@ class TxtRepository(ABC):
         self.header = self.file.readline()
         keys = self.header.strip().split()
         for line in self.file.readlines():
-            values = line.strip().split("	")
+            values = line.strip().split()
             data = dict(zip(keys, values))
             if "date" in keys:
-                year, month, day = map(int, data["date"].split("/"))
-                data["date"] = datetime(year, month, day)
+                year, month, day = map(int, data["date"].split("-"))
+                data["date"] = datetime(year, month, day).date()
             item_instance = self.__create_item_instance(data)
             self.content.append(item_instance)
 

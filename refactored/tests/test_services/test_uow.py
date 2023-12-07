@@ -27,7 +27,7 @@ class Test_TxtUnitOfWork:
             backup = file.readlines()
 
         with destination_uow:
-            destination_uow.txt_repository.update(old_item_id, new_item)
+            destination_uow.repository.update(old_item_id, new_item)
 
         with open(destination_uow.file_path, "r") as file:
             result = file.readlines()
@@ -55,7 +55,7 @@ class Test_TxtUnitOfWork:
 
         with pytest.raises(StopIteration):
             with destination_uow:
-                destination_uow.txt_repository.update(old_item_id, new_item)
+                destination_uow.repository.update(old_item_id, new_item)
 
         with open(destination_uow.file_path, "r") as file:
             result = file.readlines()
