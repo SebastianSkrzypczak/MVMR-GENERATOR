@@ -1,6 +1,7 @@
 from services import uow
 from domain import model
 from unittest.mock import mock_open, patch
+from icecream import ic
 import pytest
 
 
@@ -11,12 +12,12 @@ class Test_TxtUnitOfWork:
             r"refactored\tests\test_services\TEST_DESTINATIONS.txt"
         )
         correct_result = [
-            str(model.Destination("1", "DEST-1", "LOCATION-1", "586")),
-            str(model.Destination("4", "DEST-4", "LOCATION-4", "444")),
-            str(model.Destination("3", "DEST-3", "LOCATION-3", "374")),
+            str(model.Destination("1", "DEST-1", "LOCATION-1", 586.0)),
+            str(model.Destination("4", "DEST-4", "LOCATION-4", 444.0)),
+            str(model.Destination("3", "DEST-3", "LOCATION-3", 374.0)),
         ]
         old_item_id = "2"
-        new_item = model.Destination("4", "DEST-4", "LOCATION-4", "444")
+        new_item = model.Destination("4", "DEST-4", "LOCATION-4", 444.0)
 
         return destination_uow, correct_result, old_item_id, new_item
 
@@ -36,7 +37,8 @@ class Test_TxtUnitOfWork:
 
         with open(destination_uow.file_path, "w") as file:
             file.writelines(backup)
-
+        ic(result)
+        ic(correct_result)
         assert result == correct_result
 
     def test_uow_rollback_path(self):
@@ -45,9 +47,9 @@ class Test_TxtUnitOfWork:
         old_item_id = "5"
 
         correct_result = [
-            str(model.Destination("1", "DEST-1", "LOCATION-1", "586")),
-            str(model.Destination("2", "DEST-2", "LOCATION-2", "434")),
-            str(model.Destination("3", "DEST-3", "LOCATION-3", "374")),
+            str(model.Destination("1", "DEST-1", "LOCATION-1", 586.0)),
+            str(model.Destination("2", "DEST-2", "LOCATION-2", 434.0)),
+            str(model.Destination("3", "DEST-3", "LOCATION-3", 374.0)),
         ]
 
         with open(destination_uow.file_path, "r") as file:

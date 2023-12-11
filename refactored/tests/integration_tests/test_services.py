@@ -16,10 +16,9 @@ class TestMvmr:
                     refuelings_uow.repository,
                     7,
                     2023,
-                    0,
+                    1000,
                     0,
                 )
-
-        ic(mvmr.available_days)
+        mvmr.generate_random()
 
         assert 1 == 0

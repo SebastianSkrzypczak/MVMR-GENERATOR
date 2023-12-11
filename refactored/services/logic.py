@@ -4,6 +4,7 @@ from calendar import monthrange
 from datetime import datetime
 from icecream import ic
 from abc import ABC, abstractmethod
+import random
 
 
 class AbstractMvmr(ABC):
@@ -32,12 +33,11 @@ class Mvmr:
         self.month = month
         self.year = year
         self.free_days = free_days
-        self.current_milage = current_milage
         self.previous_milage = previous_milage
+        self.range = current_milage - previous_milage
 
         self.available_days = self.get_work_days_in_month()
         self.trips = self.add_refuelings_to_trips()
-        self.used_days = []
 
     def add_trip(
         self, date: datetime, destination: model.Destination, milage: float = 0.0
@@ -79,14 +79,33 @@ class Mvmr:
             for refueling in self.refuelings.content
             if refueling.date.month == self.month and refueling.date.year == self.year
         ]
+        for refueling in refueling_trips:
+            self.range -= refueling.destination.distance
 
         self.remove_days_from_available_days(refueling_trips)
         return refueling_trips
 
-    def generate_random(
-        self, previous_milage: float, current_milage: float, **kwargs
-    ) -> list[str]:
-        set_day_iteration = kwargs.get("set_day_iteration")
-        set_trip_iteration = kwargs.get("set_trip_iteration")
-        set_factor = kwargs.get("set_factor")
-        set_max_difference = kwargs.get("set_max_difference")
+    def renumerate(self):
+        for trip in self.trips:
+            trip.milage = self.previous_milage
+            self.previous_milage += trip.destination.distance
+
+    def generate_random(self, **kwargs) -> list[str]:
+        max_difference = 50  # kwargs.get("max_difference")
+
+        while True:
+            random_date = random.choice(self.available_days)
+            fitting_destinations = [
+                destination
+                for destination in self.destinations.content
+                if destination.distance <= self.range
+            ]
+            random_destination = random.choice(fitting_destinations)
+            self.add_trip(random_date, random_destination)
+            self.remove_days_from_available_days(self.trips)
+            self.range -= random_destination.distance
+            if self.range < max_difference:
+                break
+        self.trips.sort(key=lambda x: getattr(x, "date"))
+
+        self.renumerate()

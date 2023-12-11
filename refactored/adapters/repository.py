@@ -70,6 +70,8 @@ class TxtRepository(ABC):
             if "date" in keys:
                 year, month, day = map(int, data["date"].split("-"))
                 data["date"] = datetime(year, month, day).date()
+            if "distance" in keys:
+                data["distance"] = float(data["distance"])
             item_instance = self.__create_item_instance(data)
             self.content.append(item_instance)
 

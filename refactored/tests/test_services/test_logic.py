@@ -16,9 +16,9 @@ def test_add_refuelings_to_trips():
 
     destinations = repository.TxtRepository(TextIO, model.Destination)
     destinations.content = [
-        model.Destination("1", "DEST-1", "LOCATION-1", "586"),
-        model.Destination("2", "DEST-2", "LOCATION-2", "434"),
-        model.Destination("3", "DEST-3", "LOCATION-3", "374"),
+        model.Destination("1", "DEST-1", "LOCATION-1", 586.0),
+        model.Destination("2", "DEST-2", "LOCATION-2", 434.0),
+        model.Destination("3", "DEST-3", "LOCATION-3", 374.0),
     ]
     mvmr = logic.Mvmr(destinations, refuelings, 7, 2023, 0, 0)
     correct_result = [
