@@ -71,6 +71,7 @@ class Test_Mvmr_with_sql_uow:
                     0,
                 )
         mvmr.generate_random()
-        ic(mvmr.trips)
 
-        assert 1 == 0
+        # TODO: testing sqlrepo
+
+        assert 1 == 1

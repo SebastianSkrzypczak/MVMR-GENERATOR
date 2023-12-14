@@ -91,7 +91,7 @@ class Mvmr:
             self.previous_milage += trip.destination.distance
 
     def generate_random(self, **kwargs) -> list[str]:
-        max_difference = 50  # kwargs.get("max_difference")
+        max_difference = 20  # kwargs.get("max_difference")
 
         while True:
             random_date = random.choice(self.available_days)
@@ -104,6 +104,7 @@ class Mvmr:
             self.add_trip(random_date, random_destination)
             self.remove_days_from_available_days(self.trips)
             self.range -= random_destination.distance
+            ic(self.range)
             if self.range < max_difference:
                 break
         self.trips.sort(key=lambda x: getattr(x, "date"))

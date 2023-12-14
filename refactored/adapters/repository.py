@@ -9,6 +9,17 @@ from refactored.domain import model
 
 
 class AbstractRepository(ABC):
+    def _find_item(self, item_id: str) -> model.Item | None:
+        try:
+            content_item = next(
+                content_item
+                for content_item in self.content
+                if content_item.id == item_id
+            )
+        except StopIteration:
+            raise StopIteration
+        return content_item
+
     @abstractmethod
     def __init__(self, type: model.Item) -> None:
         self.item_type = type
@@ -35,7 +46,7 @@ class AbstractRepository(ABC):
             for attr_name in dir(content_item):
                 if not callable(
                     getattr(content_item, attr_name)
-                ) and not attr_name.startswith("__"):
+                ) and not attr_name.startswith("_"):
                     setattr(content_item, attr_name, getattr(new_item, attr_name))
         else:
             raise KeyError
@@ -60,17 +71,6 @@ class TxtRepository(AbstractRepository):
     def _create_item_instance(self, item_data: dict) -> model.Item:
         item_instace = self.item_type(**item_data)
         return item_instace
-
-    def _find_item(self, item_id: str) -> model.Item | None:
-        try:
-            content_item = next(
-                content_item
-                for content_item in self.content
-                if content_item.id == item_id
-            )
-        except StopIteration:
-            raise StopIteration
-        return content_item
 
     def add(self, item: model.Item):
         super(TxtRepository, self).add(item)
@@ -105,7 +105,7 @@ class SqlAlchemyRepository(AbstractRepository):
         self.new_items: list[model.Item] = []
 
     def read(self):
-        return self.session.query(self.item_type)
+        self.content = self.session.query(self.item_type)
 
     def add(self, item: model.Item):
         super().add(item)
@@ -113,10 +113,12 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def update(self, old_item_id: str, new_item: model.Item):
         super().update(old_item_id, new_item)
-        self.session.delete(
-            self.session.query(new_item.type()).filter_by(id=old_item_id).first()
-        )
-        self.session.add(new_item)
+        # old_item = self.session.query(new_item.type()).filter_by(id=old_item_id).first()
+        # for attr_name in dir(old_item):
+        #     if not callable(getattr(old_item, attr_name)) and not attr_name.startswith(
+        #         "__"
+        #     ):
+        #         setattr(old_item, attr_name, getattr(new_item, attr_name))
 
     def delete(self, item_to_delete: model.Item):
         super().delete(item_to_delete)

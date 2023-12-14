@@ -1,9 +1,11 @@
 from domain import model
-from adapters import repository
+from adapters import repository, orm
 from unittest.mock import patch, mock_open
 from io import StringIO
 from datetime import datetime
 from icecream import ic
+from sqlalchemy.orm import sessionmaker, session
+from sqlalchemy import create_engine
 
 
 class Test_TxtRepository:
@@ -87,3 +89,61 @@ class Test_TxtRepository:
         assert len(txt_repository.content) == 1 and str(
             txt_repository.content[0]
         ) == str(model.Destination("2", "DEST-2", "LOCATION-2", 434.0))
+
+
+class Test_SqlRepository:
+    def initial_data(self):
+        # orm.start_mappers()
+        engine = create_engine("sqlite:///:memory:")
+        orm.metadata.create_all(engine)
+
+        session_factory = sessionmaker(bind=engine)
+
+        sql_repository = repository.SqlAlchemyRepository(
+            model.Destination, session=session_factory()
+        )
+
+        items = [
+            model.Destination(1, "DEST-1", "LOCATION-1", 586.0),
+            model.Destination(2, "DEST-2", "LOCATION-2", 434.0),
+        ]
+        for item in items:
+            sql_repository.add(item)
+
+        return sql_repository
+
+    def test_add(self):
+        items = [
+            model.Destination(1, "DEST-1", "LOCATION-1", 586.0),
+            model.Destination(2, "DEST-2", "LOCATION-2", 434.0),
+        ]
+
+        sql_repository = self.initial_data()
+        sql_repository.session.commit()
+        sql_repository.session.close()
+
+        assert sql_repository.session.query(model.Destination).all() == items
+
+    def test_update(self):
+        sql_repository = self.initial_data()
+        new_item = model.Destination(1, "DEST-2", "LOCATION-2", 586.0)
+
+        sql_repository.update(1, new_item)
+        sql_repository.session.commit()
+        sql_repository.session.close()
+
+        assert sql_repository.session.query(model.Destination).filter_by(
+            id=1
+        ).first() == model.Destination(1, "DEST-2", "LOCATION-2", 586.0)
+
+    def test_delete(self):
+        sql_repository = self.initial_data()
+        item_to_delete = model.Destination(1, "DEST-1", "LOCATION-1", 586.0)
+
+        sql_repository.delete(item_to_delete)
+        sql_repository.session.commit()
+        sql_repository.session.close()
+
+        ic(sql_repository.session.query(model.Destination).all())
+
+        assert 0 == 1
