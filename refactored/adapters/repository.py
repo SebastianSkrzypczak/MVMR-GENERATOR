@@ -13,12 +13,16 @@ class AbstractRepository(ABC):
     def __init__(self, type: model.Item) -> None:
         self.item_type = type
         self.content: list[model.Item] = None
-        self.new_items: list[model.Item] = []
 
     @abstractmethod
     def add(self, item: model.Item):
-        if not any(True for content_item in self.content if content_item.id == item.id):
-            self.new_items.append(item)
+        if self.content is None:
+            self.content = []
+            self.content.append(item)
+        elif not any(
+            True for content_item in self.content if content_item.id == item.id
+        ):
+            self.content.append(item)
 
     @abstractmethod
     def read(self):
@@ -96,18 +100,24 @@ class TxtRepository(AbstractRepository):
 class SqlAlchemyRepository(AbstractRepository):
     def __init__(self, item_type: model.Item, session: orm.session):
         self.type = item_type
-        self.session = session
+        self.session: orm.session = session
         self.content: list[model.Item] = None
         self.new_items: list[model.Item] = []
 
     def read(self):
-        self.content = self.session.query(self.item_type)
+        return self.session.query(self.item_type)
 
     def add(self, item: model.Item):
         super().add(item)
+        self.session.add(item)
 
     def update(self, old_item_id: str, new_item: model.Item):
         super().update(old_item_id, new_item)
+        self.session.delete(
+            self.session.query(new_item.type()).filter_by(id=old_item_id).first()
+        )
+        self.session.add(new_item)
 
     def delete(self, item_to_delete: model.Item):
-        return super().delete(item_to_delete)
+        super().delete(item_to_delete)
+        self.session.delete(item_to_delete)

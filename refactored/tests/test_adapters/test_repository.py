@@ -63,7 +63,7 @@ class Test_TxtRepository:
             model.Destination("1", "DEST-1", "LOCATION-1", 586.0),
         ]
         txt_repository.add(new_item)
-        assert txt_repository.new_items[-1] == new_item
+        assert txt_repository.content[-1] == new_item
 
     def test_update(self):
         old_item_id = "1"
