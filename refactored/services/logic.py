@@ -104,7 +104,6 @@ class Mvmr:
             self.add_trip(random_date, random_destination)
             self.remove_days_from_available_days(self.trips)
             self.range -= random_destination.distance
-            ic(self.range)
             if self.range < max_difference:
                 break
         self.trips.sort(key=lambda x: getattr(x, "date"))

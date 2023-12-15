@@ -52,8 +52,8 @@ class AbstractRepository(ABC):
             raise KeyError
 
     @abstractmethod
-    def delete(self, item_to_delete: model.Item):
-        content_item = self._find_item(item_to_delete)
+    def remove(self, item_to_delete: model.Item):
+        content_item = self._find_item(item_to_delete.id)
         if content_item:
             self.content.remove(content_item)
         else:
@@ -93,19 +93,19 @@ class TxtRepository(AbstractRepository):
     def update(self, old_item_id: str, new_item: model.Item):
         super(TxtRepository, self).update(old_item_id, new_item)
 
-    def delete(self, item_to_delete: model.Item):
-        super(TxtRepository, self).delete(item_to_delete)
+    def remove(self, item_to_delete: model.Item):
+        super(TxtRepository, self).remove(item_to_delete)
 
 
 class SqlAlchemyRepository(AbstractRepository):
     def __init__(self, item_type: model.Item, session: orm.session):
-        self.type = item_type
+        self.item_type = item_type
         self.session: orm.session = session
         self.content: list[model.Item] = None
         self.new_items: list[model.Item] = []
 
     def read(self):
-        self.content = self.session.query(self.item_type)
+        self.content = self.session.query(self.item_type).all()
 
     def add(self, item: model.Item):
         super().add(item)
@@ -113,13 +113,8 @@ class SqlAlchemyRepository(AbstractRepository):
 
     def update(self, old_item_id: str, new_item: model.Item):
         super().update(old_item_id, new_item)
-        # old_item = self.session.query(new_item.type()).filter_by(id=old_item_id).first()
-        # for attr_name in dir(old_item):
-        #     if not callable(getattr(old_item, attr_name)) and not attr_name.startswith(
-        #         "__"
-        #     ):
-        #         setattr(old_item, attr_name, getattr(new_item, attr_name))
 
-    def delete(self, item_to_delete: model.Item):
-        super().delete(item_to_delete)
-        self.session.delete(item_to_delete)
+    def remove(self, item_to_delete: model.Item):
+        content_item = self.session.get(self.item_type, item_to_delete.id)
+        super().remove(item_to_delete)
+        self.session.delete(content_item)
