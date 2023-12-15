@@ -5,6 +5,7 @@ from datetime import datetime
 from icecream import ic
 from abc import ABC, abstractmethod
 import random
+from config import get_settings_for_random_generation
 
 
 class AbstractMvmr(ABC):
@@ -87,19 +88,24 @@ class Mvmr:
 
     def renumerate(self):
         for trip in self.trips:
-            trip.milage = self.previous_milage
-            self.previous_milage += trip.destination.distance
+            trip.milage = self.previous_milage + trip.destination.distance
+            self.previous_milage = trip.milage
 
-    def generate_random(self, **kwargs) -> list[str]:
-        max_difference = 20  # kwargs.get("max_difference")
+    def generate_random(self) -> list[str]:
+        settings = get_settings_for_random_generation()
+        max_difference = settings.get("max_difference")
 
         while True:
-            random_date = random.choice(self.available_days)
             fitting_destinations = [
                 destination
                 for destination in self.destinations.content
                 if destination.distance <= self.range
             ]
+            if not fitting_destinations:
+                break
+            if not self.available_days:
+                break
+            random_date = random.choice(self.available_days)
             random_destination = random.choice(fitting_destinations)
             self.add_trip(random_date, random_destination)
             self.remove_days_from_available_days(self.trips)

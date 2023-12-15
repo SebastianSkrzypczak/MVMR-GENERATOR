@@ -4,6 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from icecream import ic
 from adapters import orm
+from config import get_settings_for_random_generation
+import statistics
 
 
 class Test_Mvmr_with_txt_uow:
@@ -72,6 +74,43 @@ class Test_Mvmr_with_sql_uow:
                 )
         mvmr.generate_random()
 
-        # TODO: testing sqlrepo
+        ic([(trip.destination.name, trip.milage) for trip in mvmr.trips])
 
         assert 1 == 1
+
+    def test_generate_mvmr_accuracy(self):
+        engine = create_engine("sqlite:///:memory:")
+        orm.metadata.create_all(engine)
+
+        session_factory = sessionmaker(bind=engine)
+
+        destinations_uow = uow.SqlAlchemyUnitOfWork(model.Destination, session_factory)
+        refuelings_uow = uow.SqlAlchemyUnitOfWork(model.Refueling, session_factory)
+
+        destinations, refuelings = self.initial_data()
+
+        differences = []
+
+        with destinations_uow:
+            with refuelings_uow:
+                for destination in destinations:
+                    destinations_uow.repository.add(destination)
+                for refueling in refuelings:
+                    refuelings_uow.repository.add(refueling)
+
+        for _ in range(0, 1000):
+            mvmr = logic.Mvmr(
+                destinations_uow.repository,
+                refuelings_uow.repository,
+                7,
+                2023,
+                1000,
+                0,
+            )
+            mvmr.generate_random()
+            difference = 1000 - mvmr.trips[-1].milage
+            differences.append(difference)
+
+        max_difference = get_settings_for_random_generation().get("max_difference")
+
+        assert statistics.mean(differences) <= max_difference
