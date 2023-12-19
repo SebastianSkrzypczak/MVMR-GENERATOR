@@ -36,9 +36,8 @@ class Mvmr:
         self.free_days = free_days
         self.previous_milage = previous_milage
         self.range = current_milage - previous_milage
-
-        self.available_days = self.get_work_days_in_month()
-        self.trips = self.add_refuelings_to_trips()
+        self.available_days = None
+        self.trips = None
 
     def add_trip(
         self, date: datetime, destination: model.Destination, milage: float = 0.0
@@ -61,7 +60,7 @@ class Mvmr:
             for day in range(1, days_in_month)
             if datetime(self.year, self.month, day).weekday() not in (6, 7)
         ]
-        return work_days
+        self.available_days = work_days
         # TODO: HOLIDAYS API
         # TODO: FREE DAYS
 
@@ -82,9 +81,8 @@ class Mvmr:
         ]
         for refueling in refueling_trips:
             self.range -= refueling.destination.distance
-
         self.remove_days_from_available_days(refueling_trips)
-        return refueling_trips
+        self.trips = refueling_trips
 
     def renumerate(self):
         for trip in self.trips:
@@ -94,7 +92,6 @@ class Mvmr:
     def generate_random(self) -> list[str]:
         settings = get_settings_for_random_generation()
         max_difference = settings.get("max_difference")
-
         while True:
             fitting_destinations = [
                 destination

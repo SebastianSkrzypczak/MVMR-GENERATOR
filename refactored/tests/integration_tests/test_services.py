@@ -23,6 +23,8 @@ class Test_Mvmr_with_txt_uow:
                     1000,
                     0,
                 )
+        mvmr.get_work_days_in_month()
+        mvmr.add_refuelings_to_trips()
         mvmr.generate_random()
 
         assert 1 == 1
@@ -72,6 +74,8 @@ class Test_Mvmr_with_sql_uow:
                     1000,
                     0,
                 )
+        mvmr.get_work_days_in_month()
+        mvmr.add_refuelings_to_trips()
         mvmr.generate_random()
 
         ic([(trip.destination.name, trip.milage) for trip in mvmr.trips])
@@ -98,18 +102,20 @@ class Test_Mvmr_with_sql_uow:
                 for refueling in refuelings:
                     refuelings_uow.repository.add(refueling)
 
-        for _ in range(0, 1000):
-            mvmr = logic.Mvmr(
-                destinations_uow.repository,
-                refuelings_uow.repository,
-                7,
-                2023,
-                1000,
-                0,
-            )
-            mvmr.generate_random()
-            difference = 1000 - mvmr.trips[-1].milage
-            differences.append(difference)
+                for _ in range(0, 100):
+                    mvmr = logic.Mvmr(
+                        destinations_uow.repository,
+                        refuelings_uow.repository,
+                        7,
+                        2023,
+                        1000,
+                        0,
+                    )
+                    mvmr.get_work_days_in_month()
+                    mvmr.add_refuelings_to_trips()
+                    mvmr.generate_random()
+                    difference = 1000 - mvmr.trips[-1].milage
+                    differences.append(difference)
 
         max_difference = get_settings_for_random_generation().get("max_difference")
 

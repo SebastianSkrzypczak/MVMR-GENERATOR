@@ -21,6 +21,8 @@ def test_add_refuelings_to_trips():
         model.Destination("3", "DEST-3", "LOCATION-3", 374.0),
     ]
     mvmr = logic.Mvmr(destinations, refuelings, 7, 2023, 0, 0)
+    mvmr.get_work_days_in_month()
+    mvmr.add_refuelings_to_trips()
     correct_result = [
         model.Trip(
             None,
@@ -41,7 +43,7 @@ def test_add_refuelings_to_trips():
             None,
         ),
     ]
-    mvmr.add_refuelings_to_trips()
     trips = mvmr.trips
+    ic(trips)
 
     assert trips == correct_result
