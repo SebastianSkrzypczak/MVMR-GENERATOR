@@ -5,10 +5,13 @@ from datetime import datetime
 from icecream import ic
 from sqlalchemy import orm
 
-from refactored.domain import model
-
 
 class AbstractRepository(ABC):
+    @abstractmethod
+    def __init__(self, type: model.Item) -> None:
+        self.item_type = type
+        self.content: list[model.Item] = None
+
     def _find_item(self, item_id: str) -> model.Item | None:
         try:
             content_item = next(
@@ -19,11 +22,6 @@ class AbstractRepository(ABC):
         except StopIteration:
             raise StopIteration
         return content_item
-
-    @abstractmethod
-    def __init__(self, type: model.Item) -> None:
-        self.item_type = type
-        self.content: list[model.Item] = None
 
     @abstractmethod
     def add(self, item: model.Item):

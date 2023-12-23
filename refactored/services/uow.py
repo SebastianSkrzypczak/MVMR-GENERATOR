@@ -2,7 +2,7 @@ from adapters import repository
 from abc import ABC, abstractmethod
 from domain import model
 from sqlalchemy.orm import sessionmaker, session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect
 import config
 
 
@@ -58,17 +58,17 @@ class TxtUnitOfWork(AbstractUnitOfWork):
             self.rollback()
 
 
-# DEFAULT_SESSION_FACTORY = sessionmaker(
-#     bind=create_engine(
-#         config.get_postgres_uri(),
-#         isolation_level="REPEATABLE READ",
-#     )
-# )
+DEFAULT_SESSION_FACTORY = sessionmaker(
+    bind=create_engine(
+        config.get_postgres_uri(),
+        isolation_level="REPEATABLE READ",
+    )
+)
 
 
 class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __init__(
-        self, item_type: model.Item, session_factory  # =DEFAULT_SESSION_FACTORY
+        self, item_type: model.Item, session_factory=DEFAULT_SESSION_FACTORY
     ) -> None:
         self.item_type = item_type
         self.sesion_factory = session_factory
@@ -89,3 +89,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def commit(self, content: list):
         self.session.commit()
+
+    def table_exist(self, table_name):
+        inspector = inspect(self.session.bind)
+        return inspector.has_table(table_name)
