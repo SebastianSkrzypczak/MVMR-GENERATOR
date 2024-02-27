@@ -33,7 +33,8 @@ class TxtUnitOfWork(AbstractUnitOfWork):
 
     def __enter__(self):
         with open(self.file_path, "r") as file:
-            self.repository = repository.TxtRepository(file, self.item_type)
+            if not self.repository:
+                self.repository = repository.TxtRepository(file, self.item_type)
             self.repository.read()
             self.backup_content = self.repository.content
 

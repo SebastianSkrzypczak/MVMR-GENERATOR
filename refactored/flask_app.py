@@ -41,26 +41,30 @@ def load_data():
     with destination_uow:
         for item in items:
             destination_uow.repository.add(item)
-    print(destination_uow.repository.content)
-    return jsonify(destination_uow.repository.content)
+
+    file_path = os.path.join("files", "REFUELINGS.txt")
+    with open(file_path, "r") as file:
+        refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
+        refueling_txt_repository.read()
+    items = refueling_txt_repository.content
+    with refueling_uow:
+        for item in items:
+            refueling_uow.repository.add(item)
+    return jsonify(refueling_uow.repository.content)
 
 
 @app.route("/destinations", methods=["GET"])
 def get_destinations():
-    # return jsonify(destination_uow.repository.content)
     with destination_uow:
         destinations = destination_uow.repository.content
         return jsonify(destinations)
-    #     result = [
-    #         {
-    #             "id": dest.id,
-    #             "name": dest.name,
-    #             "location": dest.location,
-    #             "distance": dest.distance,
-    #         }
-    #         for dest in destinations
-    #     ]
-    # return jsonify(result)
+
+
+@app.route("/refuelings", methods=["GET"])
+def get_refuelings():
+    with refueling_uow:
+        refuelings = refueling_uow.repository.content
+        return jsonify(refuelings)
 
 
 @app.route("/trips", methods=["GET"])
