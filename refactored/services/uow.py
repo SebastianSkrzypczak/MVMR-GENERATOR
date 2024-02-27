@@ -78,7 +78,10 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def __enter__(self):
         self.session = self.sesion_factory()  # type: session.Session
-        self.repository = repository.SqlAlchemyRepository(self.item_type, self.session)
+        if not self.repository:
+            self.repository = repository.SqlAlchemyRepository(
+                self.item_type, self.session
+            )
         return super().__enter__()
 
     def __exit__(self, exttype: Exception, exc_value, traceback):

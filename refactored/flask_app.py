@@ -18,9 +18,9 @@ destination_uow, refueling_uow = bootstrap()  # type: uow.AbstractUnitOfWork
 
 
 # Routes
-@app.route("/check_table")
+@app.route("/check_table", methods=["GET"])
 def check_table():
-    table_name = "destination"  # Replace with the actual table name you want to check
+    table_name = "destinations"  # Replace with the actual table name you want to check
     table_exists = False
 
     with destination_uow:
@@ -41,23 +41,26 @@ def load_data():
     with destination_uow:
         for item in items:
             destination_uow.repository.add(item)
+    print(destination_uow.repository.content)
     return jsonify(destination_uow.repository.content)
 
 
 @app.route("/destinations", methods=["GET"])
 def get_destinations():
+    # return jsonify(destination_uow.repository.content)
     with destination_uow:
         destinations = destination_uow.repository.content
-    result = [
-        {
-            "id": dest.id,
-            "name": dest.name,
-            "location": dest.location,
-            "distance": dest.distance,
-        }
-        for dest in destinations
-    ]
-    return jsonify(result)
+        return jsonify(destinations)
+    #     result = [
+    #         {
+    #             "id": dest.id,
+    #             "name": dest.name,
+    #             "location": dest.location,
+    #             "distance": dest.distance,
+    #         }
+    #         for dest in destinations
+    #     ]
+    # return jsonify(result)
 
 
 @app.route("/trips", methods=["GET"])
