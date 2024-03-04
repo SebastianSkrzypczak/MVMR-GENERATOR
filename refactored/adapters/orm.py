@@ -1,9 +1,21 @@
-from sqlalchemy import Table, MetaData, Column, Integer, String, Float, Date, ForeignKey
+from sqlalchemy import (
+    Table,
+    MetaData,
+    Column,
+    Integer,
+    String,
+    Float,
+    Date,
+    ForeignKey,
+    create_engine,
+)
 from sqlalchemy.orm import registry, relationship
+from config import get_postgres_uri
 from domain import model
 
 metadata = MetaData()
 mapper_registry = registry(metadata=metadata)
+engine = create_engine(get_postgres_uri())
 
 destinations = Table(
     "destinations",
@@ -34,6 +46,7 @@ refuelings = Table(
 
 
 def start_mappers():
+    metadata.create_all(engine)
     destinations_mapper = mapper_registry.map_imperatively(
         model.Destination, destinations
     )

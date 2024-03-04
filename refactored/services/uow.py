@@ -88,12 +88,12 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def __exit__(self, exttype: Exception, exc_value, traceback):
         self.session.close()
 
-    def rollback(self, content: list):
+    def rollback(self):
         self.session.rollback()
 
-    def commit(self, content: list):
+    def commit(self):
         self.session.commit()
 
     def table_exist(self, table_name):
         inspector = inspect(self.session.bind)
-        return True  # inspector.has_table(table_name)
+        return inspector.has_table(table_name)

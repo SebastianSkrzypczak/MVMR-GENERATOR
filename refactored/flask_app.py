@@ -7,6 +7,12 @@ from domain import model
 import config
 import os
 
+import logging
+
+# Konfiguracja logowania dla SQLAlchemy
+logging.basicConfig()
+logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+
 app = Flask(__name__)
 
 app.config["SQLALCHEMY_DATABASE_URI"] = config.get_postgres_uri()
