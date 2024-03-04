@@ -17,12 +17,9 @@ db = SQLAlchemy(app)
 destination_uow, refueling_uow = bootstrap()  # type: uow.AbstractUnitOfWork
 
 
-# Routes
 @app.route("/check_table", methods=["GET"])
 def check_table():
-    table_name = "destinations"  # Replace with the actual table name you want to check
-    table_exists = False
-
+    table_name = "destinations"
     with destination_uow:
         table_exists = destination_uow.table_exist(table_name)
 
@@ -65,21 +62,6 @@ def get_refuelings():
     with refueling_uow:
         refuelings = refueling_uow.repository.content
         return jsonify(refuelings)
-
-
-@app.route("/trips", methods=["GET"])
-def get_trips():
-    trips = refueling_uow.list()
-    result = [
-        {
-            "id": trip.id,
-            "date": trip.date,
-            "destination_id": trip.destination_id,
-            "milage": trip.milage,
-        }
-        for trip in trips
-    ]
-    return jsonify(result)
 
 
 if __name__ == "__main__":

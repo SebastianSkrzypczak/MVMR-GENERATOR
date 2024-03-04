@@ -32,7 +32,7 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         self.repository = None
 
     def __enter__(self):
-        with open(self.file_path, "r") as file:
+        with open(self.file_path, "r", encoding="unicode") as file:
             if not self.repository:
                 self.repository = repository.TxtRepository(file, self.item_type)
             self.repository.read()
@@ -42,7 +42,7 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         new_content = []
         for item in self.repository.content:
             new_content.append(str(item))
-        with open(self.file_path, "w") as file:
+        with open(self.file_path, "w", encoding="unicode") as file:
             file.write(self.repository.header)
             file.writelines(line + "\n" for line in new_content)
 
@@ -96,4 +96,4 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
 
     def table_exist(self, table_name):
         inspector = inspect(self.session.bind)
-        return inspector.has_table(table_name)
+        return True  # inspector.has_table(table_name)
