@@ -83,6 +83,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
             self.repository = repository.SqlAlchemyRepository(
                 self.item_type, self.session
             )
+            self.repository.read()
         return super().__enter__()
 
     def __exit__(self, exttype: Exception, exc_value, traceback):

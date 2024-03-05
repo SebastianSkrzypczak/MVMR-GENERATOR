@@ -7,11 +7,10 @@ from domain import model
 import config
 import os
 
-import logging
+# import logging
 
-# Konfiguracja logowania dla SQLAlchemy
-logging.basicConfig()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+# logging.basicConfig()
+# logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -23,9 +22,8 @@ db = SQLAlchemy(app)
 destination_uow, refueling_uow = bootstrap()  # type: uow.AbstractUnitOfWork
 
 
-@app.route("/check_table", methods=["GET"])
-def check_table():
-    table_name = "destinations"
+@app.route("/check_table/<string:table_name>", methods=["GET"])
+def check_table(table_name):
     with destination_uow:
         table_exists = destination_uow.table_exist(table_name)
 
