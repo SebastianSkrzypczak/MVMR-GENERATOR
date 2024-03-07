@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from services.bootstrap import bootstrap
 from services import uow
@@ -6,6 +6,7 @@ from adapters import repository
 from domain import model
 import config
 import os
+from icecream import ic
 
 # import logging
 
@@ -66,6 +67,45 @@ def get_refuelings():
     with refueling_uow:
         refuelings = refueling_uow.repository.content
         return jsonify(refuelings)
+
+
+@app.route("/add_destination", methods=["GET", "POST"])
+def add_destination():
+    if request.method == "POST":
+        name = request.form["name"]
+        location = request.form["location"]
+        distance = request.form["distance"]
+
+        with destination_uow:
+            # move to manager
+            print(destination_uow.repository.content)
+            last_id = destination_uow.repository.content[-1].id
+            new_destination = model.Destination(last_id + 1, name, location, distance)
+            destination_uow.repository.add(new_destination)
+            destination_uow.commit()
+            return redirect("/destinations")
+
+    return render_template("add_destination.html")
+
+
+@app.route("/destinations_list", methods=["GET", "POST"])
+def destinations_list():
+    if request.method == "POST":
+        destinations_to_delete = request.form.getlist("delete")
+        with destination_uow:
+            for destination_id in destinations_to_delete:
+                destination_uow.repository.remove(int(destination_id))
+            ic(destination_uow.session)
+            destination_uow.commit()
+
+        return redirect("/destinations_list")
+        # Redirect to the same page after deletion
+
+    with destination_uow:
+        destinations = (
+            destination_uow.repository.content
+        )  # Get all destinations from the repository
+        return render_template("destinations_list.html", destinations=destinations)
 
 
 if __name__ == "__main__":

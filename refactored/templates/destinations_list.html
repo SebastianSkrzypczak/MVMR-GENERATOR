@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Destinations List</title>
+  </head>
+  <body>
+    <h1>Destinations List</h1>
+    <form action="{{ url_for('destinations_list') }}" method="post">
+      <ul>
+        {% for destination in destinations %}
+        <li>
+          <input type="checkbox" name="delete" value="{{ destination.id }}" />
+          {{ destination.name }} - {{ destination.location }} - {{
+          destination.distance }} km
+        </li>
+        {% endfor %}
+      </ul>
+      <button type="submit">Delete Selected</button>
+    </form>
+  </body>
+</html>

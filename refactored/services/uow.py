@@ -2,6 +2,7 @@ from adapters import repository
 from abc import ABC, abstractmethod
 from domain import model
 from sqlalchemy.orm import sessionmaker, session
+from icecream import ic
 from sqlalchemy import create_engine, inspect
 import config
 
@@ -87,6 +88,9 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         return super().__enter__()
 
     def __exit__(self, exttype: Exception, exc_value, traceback):
+        if exttype is not None:
+            ic(exttype)
+            self.session.rollback()
         self.session.close()
 
     def rollback(self):

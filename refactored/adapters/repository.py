@@ -19,6 +19,7 @@ class AbstractRepository(ABC):
                 for content_item in self.content
                 if content_item.id == item_id
             )
+
         except StopIteration:
             raise StopIteration
         return content_item
@@ -50,8 +51,8 @@ class AbstractRepository(ABC):
             raise KeyError
 
     @abstractmethod
-    def remove(self, item_to_delete: model.Item):
-        content_item = self._find_item(item_to_delete.id)
+    def remove(self, item_to_delete_id: int):
+        content_item = self._find_item(item_to_delete_id)
         if content_item:
             self.content.remove(content_item)
         else:
@@ -112,7 +113,10 @@ class SqlAlchemyRepository(AbstractRepository):
     def update(self, old_item_id: str, new_item: model.Item):
         super().update(old_item_id, new_item)
 
-    def remove(self, item_to_delete: model.Item):
-        content_item = self.session.get(self.item_type, item_to_delete.id)
-        super().remove(item_to_delete)
+    def remove(self, item_to_delete_id: int):
+        content_item = self.session.get(self.item_type, item_to_delete_id)
+        super().remove(item_to_delete_id)
         self.session.delete(content_item)
+        ic(self.session)
+        # self.session.commit()
+        # ic(self.session.query(self.item_type).all())
