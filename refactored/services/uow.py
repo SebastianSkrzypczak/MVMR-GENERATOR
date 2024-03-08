@@ -64,7 +64,8 @@ DEFAULT_SESSION_FACTORY = sessionmaker(
     bind=create_engine(
         config.get_postgres_uri(),
         isolation_level="REPEATABLE READ",
-    )
+    ),
+    expire_on_commit=False,
 )
 
 
@@ -85,11 +86,15 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
                 self.item_type, self.session
             )
             self.repository.read()
+        else:
+            self.repository.session = None
+            self.repository.session = self.session
+            # self.repository.read()
+
         return super().__enter__()
 
     def __exit__(self, exttype: Exception, exc_value, traceback):
         if exttype is not None:
-            ic(exttype)
             self.session.rollback()
         self.session.close()
 

@@ -4,6 +4,7 @@ from services.bootstrap import bootstrap
 from services import uow
 from adapters import repository
 from domain import model
+from sqlalchemy import func
 import config
 import os
 from icecream import ic
@@ -31,28 +32,28 @@ def check_table(table_name):
     return jsonify({"table_exists": table_exists})
 
 
-@app.route("/load_data", methods=["GET"])
-def load_data():
-    file_path = os.path.join("files", "DESTINATIONS.txt")
-    with open(file_path, "r") as file:
-        destination_txt_repository = repository.TxtRepository(
-            file, type=model.Destination
-        )
-        destination_txt_repository.read()
-    items = destination_txt_repository.content
-    with destination_uow:
-        for item in items:
-            destination_uow.repository.add(item)
+# @app.route("/load_data", methods=["GET"])
+# def load_data():
+#     file_path = os.path.join("files", "DESTINATIONS.txt")
+#     with open(file_path, "r") as file:
+#         destination_txt_repository = repository.TxtRepository(
+#             file, type=model.Destination
+#         )
+#         destination_txt_repository.read()
+#     items = destination_txt_repository.content
+#     with destination_uow:
+#         for item in items:
+#             destination_uow.repository.add(item)
 
-    file_path = os.path.join("files", "REFUELINGS.txt")
-    with open(file_path, "r") as file:
-        refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
-        refueling_txt_repository.read()
-    items = refueling_txt_repository.content
-    with refueling_uow:
-        for item in items:
-            refueling_uow.repository.add(item)
-    return jsonify(refueling_uow.repository.content)
+#     file_path = os.path.join("files", "REFUELINGS.txt")
+#     with open(file_path, "r") as file:
+#         refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
+#         refueling_txt_repository.read()
+#     items = refueling_txt_repository.content
+#     with refueling_uow:
+#         for item in items:
+#             refueling_uow.repository.add(item)
+#     return jsonify(refueling_uow.repository.content)
 
 
 @app.route("/destinations", methods=["GET"])
@@ -77,13 +78,14 @@ def add_destination():
         distance = request.form["distance"]
 
         with destination_uow:
-            # move to manager
-            print(destination_uow.repository.content)
-            last_id = destination_uow.repository.content[-1].id
+            last_id = (
+                destination_uow.session.query(func.max(model.Destination.id)).scalar()
+                or 0
+            )
             new_destination = model.Destination(last_id + 1, name, location, distance)
             destination_uow.repository.add(new_destination)
             destination_uow.commit()
-            return redirect("/destinations")
+            return redirect("/destinations_list")
 
     return render_template("add_destination.html")
 
@@ -97,15 +99,11 @@ def destinations_list():
                 destination_uow.repository.remove(int(destination_id))
             ic(destination_uow.session)
             destination_uow.commit()
-
         return redirect("/destinations_list")
-        # Redirect to the same page after deletion
-
-    with destination_uow:
-        destinations = (
-            destination_uow.repository.content
-        )  # Get all destinations from the repository
-        return render_template("destinations_list.html", destinations=destinations)
+    elif request.method == "GET":
+        with destination_uow:
+            destinations = destination_uow.repository.content
+            return render_template("destinations_list.html", destinations=destinations)
 
 
 if __name__ == "__main__":
