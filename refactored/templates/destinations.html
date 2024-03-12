@@ -8,15 +8,30 @@
   <body>
     <h1>Destinations List</h1>
     <form action="{{ url_for('destinations') }}" method="post">
-      <ul>
-        {% for destination in destinations %}
-        <li>
-          <input type="checkbox" name="delete" value="{{ destination.id }}" />
-          {{ destination.id }} - {{ destination.name }} - {{
-          destination.location }} - {{ destination.distance }} km
-        </li>
-        {% endfor %}
-      </ul>
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Locatione</th>
+            <th>Distance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for destination in destinations %}
+          <tr>
+            <td>
+              <input type="checkbox" name="delete" value="{{destination.id}}" />
+            </td>
+            <td>{{ destination.id }}</td>
+            <td>{{ destination.name }}</td>
+            <td>{{ destination.location }}</td>
+            <td>{{ destination.distance }}</td>
+          </tr>
+          {%endfor%}
+        </tbody>
+      </table>
       <button type="submit">Delete Selected</button>
     </form>
     <button onclick="window.location.href = '/add_destination';">
