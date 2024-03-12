@@ -5,6 +5,7 @@ from sqlalchemy.orm import sessionmaker, session
 from icecream import ic
 from sqlalchemy import create_engine, inspect
 import config
+from sqlalchemy import func
 
 
 class AbstractUnitOfWork(ABC):
@@ -22,6 +23,10 @@ class AbstractUnitOfWork(ABC):
 
     @abstractmethod
     def commit(self, content: list):
+        pass
+
+    @abstractmethod
+    def get_last_id(self, item: model.Item):
         pass
 
 
@@ -58,6 +63,9 @@ class TxtUnitOfWork(AbstractUnitOfWork):
             self.commit()
         else:
             self.rollback()
+
+    def get_last_id(self, item: model.Item):
+        return super().get_last_id(item)
 
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
@@ -107,3 +115,7 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
     def table_exist(self, table_name):
         inspector = inspect(self.session.bind)
         return inspector.has_table(table_name)
+
+    def get_last_id(self):
+        last_id = self.session.query(func.max(self.item_type.id)).scalar() or 0
+        return last_id

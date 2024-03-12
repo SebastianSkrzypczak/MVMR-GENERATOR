@@ -12,8 +12,8 @@
         {% for destination in destinations %}
         <li>
           <input type="checkbox" name="delete" value="{{ destination.id }}" />
-          {{ destination.name }} - {{ destination.location }} - {{
-          destination.distance }} km
+          {{ destination.id }} - {{ destination.name }} - {{
+          destination.location }} - {{ destination.distance }} km
         </li>
         {% endfor %}
       </ul>

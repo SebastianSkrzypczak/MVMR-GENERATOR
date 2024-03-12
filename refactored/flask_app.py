@@ -4,10 +4,8 @@ from services.bootstrap import bootstrap
 from services import uow
 from adapters import repository
 from domain import model
-from sqlalchemy import func
 import config
-import os
-from icecream import ic
+
 
 # import logging
 
@@ -78,10 +76,7 @@ def add_destination():
         distance = request.form["distance"]
 
         with destination_uow:
-            last_id = (
-                destination_uow.session.query(func.max(model.Destination.id)).scalar()
-                or 0
-            )
+            last_id = destination_uow.get_last_id()
             new_destination = model.Destination(last_id + 1, name, location, distance)
             destination_uow.repository.add(new_destination)
             destination_uow.commit()
@@ -97,7 +92,6 @@ def destinations_list():
         with destination_uow:
             for destination_id in destinations_to_delete:
                 destination_uow.repository.remove(int(destination_id))
-            ic(destination_uow.session)
             destination_uow.commit()
         return redirect("/destinations_list")
     elif request.method == "GET":
