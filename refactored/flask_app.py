@@ -5,7 +5,8 @@ from services import uow
 from adapters import repository
 from domain import model
 import config
-
+from icecream import ic
+from datetime import datetime
 
 # import logging
 
@@ -54,18 +55,19 @@ def check_table(table_name):
 #     return jsonify(refueling_uow.repository.content)
 
 
-@app.route("/destinations", methods=["GET"])
-def get_destinations():
-    with destination_uow:
-        destinations = destination_uow.repository.content
-        return jsonify(destinations)
-
-
-@app.route("/refuelings", methods=["GET"])
-def get_refuelings():
-    with refueling_uow:
-        refuelings = refueling_uow.repository.content
-        return jsonify(refuelings)
+@app.route("/refuelings", methods=["GET", "POST"])
+def refuelings():
+    if request.method == "POST":
+        refuelings_to_delete = request.form.getlist("delete")
+        with refueling_uow:
+            for destination_id in refuelings_to_delete:
+                refueling_uow.repository.remove(int(destination_id))
+            refueling_uow.commit()
+        return redirect("/refuelings")
+    elif request.method == "GET":
+        with refueling_uow:
+            refuelings = refueling_uow.repository.content
+            return render_template("refuelings.html", refuelings=refuelings)
 
 
 @app.route("/add_destination", methods=["GET", "POST"])
@@ -80,24 +82,46 @@ def add_destination():
             new_destination = model.Destination(last_id + 1, name, location, distance)
             destination_uow.repository.add(new_destination)
             destination_uow.commit()
-            return redirect("/destinations_list")
+        return redirect("/destinations")
 
     return render_template("add_destination.html")
 
 
-@app.route("/destinations_list", methods=["GET", "POST"])
-def destinations_list():
+@app.route("/destinations", methods=["GET", "POST"])
+def destinations():
     if request.method == "POST":
         destinations_to_delete = request.form.getlist("delete")
         with destination_uow:
             for destination_id in destinations_to_delete:
                 destination_uow.repository.remove(int(destination_id))
             destination_uow.commit()
-        return redirect("/destinations_list")
+        return redirect("/destinations")
     elif request.method == "GET":
         with destination_uow:
             destinations = destination_uow.repository.content
-            return render_template("destinations_list.html", destinations=destinations)
+            return render_template("destinations.html", destinations=destinations)
+
+
+@app.route("/add_refueling", methods=["GET", "POST"])
+def add_refueling():
+    if request.method == "POST":
+        date = request.form["date"]
+        volume = request.form["volume"]
+        destination_id = request.form["destination"]
+
+        with refueling_uow:
+            last_id = refueling_uow.get_last_id()
+            new_refueling = model.Refueling(last_id + 1, date, volume, destination_id)
+            refueling_uow.repository.add(new_refueling)
+            refueling_uow.commit()
+        return redirect("/refuelings")
+
+    with destination_uow:
+        destinations = destination_uow.repository.content
+
+    today = datetime.today().strftime("%Y-&m-%d")
+
+    return render_template("add_refueling.html", destinations=destinations, today=today)
 
 
 if __name__ == "__main__":

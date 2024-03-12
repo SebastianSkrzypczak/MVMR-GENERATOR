@@ -7,7 +7,7 @@
   </head>
   <body>
     <h1>Destinations List</h1>
-    <form action="{{ url_for('destinations_list') }}" method="post">
+    <form action="{{ url_for('destinations') }}" method="post">
       <ul>
         {% for destination in destinations %}
         <li>
@@ -19,5 +19,8 @@
       </ul>
       <button type="submit">Delete Selected</button>
     </form>
+    <button onclick="window.location.href = '/add_destination';">
+      Add destination
+    </button>
   </body>
 </html>
