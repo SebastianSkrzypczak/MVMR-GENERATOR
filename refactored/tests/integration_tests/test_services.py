@@ -16,8 +16,8 @@ class Test_Mvmr_with_txt_uow:
         with destinations_uow:
             with refuelings_uow:
                 mvmr = logic.Mvmr(
-                    destinations_uow.repository,
-                    refuelings_uow.repository,
+                    destinations_uow.repository.content,
+                    refuelings_uow.repository.content,
                     7,
                     2023,
                     1000,

@@ -1,0 +1,65 @@
+<!-- generate.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Generate MVMR</title>
+    <script>
+      function checkMilage() {
+        var previousMilage = document.getElementById("previous_milage").value;
+        var currentMilage = document.getElementById("current_milage").value;
+
+        if (parseInt(currentMilage) <= parseInt(previousMilage)) {
+          alert("CURRENT_MILAGE must be greater than PREVIOUS_MILAGE");
+          document.getElementById("current_milage").value = ""; // Wyczyszczenie pola, jeśli wartość jest nieprawidłowa
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h2>Generate new MVMR</h2>
+    <form method="post">
+      <label for="month_year">MONTH:</label><br />
+      <input
+        type="month"
+        id="month_year"
+        name="month_year"
+        min="2000-01-01"
+        max="{{today}}"
+      /><br />
+
+      <label for="number">PREVIOUS_MILAGE:</label><br />
+      <input
+        type="number"
+        id="previous_milage"
+        name="previous_milage"
+        min="0"
+        max="1000000"
+        step="1"
+      /><br />
+
+      <label for="number">CURRENT_MILAGE:</label><br />
+      <input
+        type="number"
+        id="current_milage"
+        name="current_milage"
+        min="0"
+        max="1000000"
+        step="1"
+        onblur="checkMilage()"
+      /><br />
+      <!--
+      <label for="select_list">Destination:</label><br />
+      <select id="destination" name="destination">
+        {%for destination in destinations%}
+        <option value="{{destination.id}}">
+          {{ destination.id }} - {{ destination.name }} - {{
+          destination.location }} - {{ destination.distance }} km
+        </option>
+        {%endfor%}
+      </select>
+      <br /><br />
+    -->
+      <input type="submit" value="Submit" />
+    </form>
+  </body>
+</html>

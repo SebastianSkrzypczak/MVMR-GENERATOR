@@ -21,8 +21,8 @@ class AbstractMvmr(ABC):
 class Mvmr:
     def __init__(
         self,
-        destinations: repository.AbstractRepository,
-        refuelings: repository.AbstractRepository,
+        destinations: list,
+        refuelings: list,
         month: int,
         year: int,
         current_milage: int,
@@ -71,12 +71,12 @@ class Mvmr:
                 date=refueling.date,
                 destination=next(
                     destination
-                    for destination in self.destinations.content
+                    for destination in self.destinations
                     if destination.id == refueling.destination_id
                 ),
                 milage=None,
             )
-            for refueling in self.refuelings.content
+            for refueling in self.refuelings
             if refueling.date.month == self.month and refueling.date.year == self.year
         ]
         for refueling in refueling_trips:
@@ -85,7 +85,10 @@ class Mvmr:
         self.trips = refueling_trips
 
     def renumerate(self):
+        last_id = 0
         for trip in self.trips:
+            trip.id = last_id + 1
+            last_id = trip.id
             trip.milage = self.previous_milage + trip.destination.distance
             self.previous_milage = trip.milage
 
@@ -95,7 +98,7 @@ class Mvmr:
         while True:
             fitting_destinations = [
                 destination
-                for destination in self.destinations.content
+                for destination in self.destinations
                 if destination.distance <= self.range
             ]
             if not fitting_destinations:

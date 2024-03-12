@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request, render_template, redirect
 from flask_sqlalchemy import SQLAlchemy
 from services.bootstrap import bootstrap
-from services import uow
+from services import uow, logic
 from adapters import repository
 from domain import model
 from icecream import ic
@@ -9,10 +9,10 @@ from datetime import datetime
 import os
 import config
 
-import logging
+# import logging
 
-logging.basicConfig()
-logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
+# logging.basicConfig()
+# logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
 app = Flask(__name__)
 
@@ -32,30 +32,30 @@ def check_table(table_name):
     return jsonify({"table_exists": table_exists})
 
 
-@app.route("/load_data", methods=["GET"])
-def load_data():
-    file_path = os.path.join("files", "DESTINATIONS.txt")
-    with open(file_path, "r") as file:
-        destination_txt_repository = repository.TxtRepository(
-            file, type=model.Destination
-        )
-        destination_txt_repository.read()
-    items = destination_txt_repository.content
-    with destination_uow:
-        for item in items:
-            destination_uow.repository.add(item)
-        destination_uow.commit()
+# @app.route("/load_data", methods=["GET"])
+# def load_data():
+#     file_path = os.path.join("files", "DESTINATIONS.txt")
+#     with open(file_path, "r") as file:
+#         destination_txt_repository = repository.TxtRepository(
+#             file, type=model.Destination
+#         )
+#         destination_txt_repository.read()
+#     items = destination_txt_repository.content
+#     with destination_uow:
+#         for item in items:
+#             destination_uow.repository.add(item)
+#         destination_uow.commit()
 
-    file_path = os.path.join("files", "REFUELINGS.txt")
-    with open(file_path, "r") as file:
-        refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
-        refueling_txt_repository.read()
-    items = refueling_txt_repository.content
-    with refueling_uow:
-        for item in items:
-            refueling_uow.repository.add(item)
-        refueling_uow.commit()
-    return jsonify(refueling_uow.repository.content)
+#     file_path = os.path.join("files", "REFUELINGS.txt")
+#     with open(file_path, "r") as file:
+#         refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
+#         refueling_txt_repository.read()
+#     items = refueling_txt_repository.content
+#     with refueling_uow:
+#         for item in items:
+#             refueling_uow.repository.add(item)
+#         refueling_uow.commit()
+#     return jsonify(refueling_uow.repository.content)
 
 
 @app.route("/refuelings", methods=["GET", "POST"])
@@ -125,6 +125,34 @@ def add_refueling():
     today = datetime.today().strftime("%Y-&m-%d")
 
     return render_template("add_refueling.html", destinations=destinations, today=today)
+
+
+@app.route("/generate", methods=["GET", "POST"])
+def generate():
+    if request.method == "POST":
+        year, month = map(int, request.form["month_year"].split("-"))
+        current_milage = int(request.form["current_milage"])
+        previous_milage = int(request.form["previous_milage"])
+        with destination_uow:
+            destinations = destination_uow.repository.content
+        with refueling_uow:
+            refuelings = refueling_uow.repository.content
+        mvmr = logic.Mvmr(
+            destinations,
+            refuelings,
+            month,
+            year,
+            current_milage,
+            previous_milage,
+        )
+        mvmr.get_work_days_in_month()
+        mvmr.add_refuelings_to_trips()
+        mvmr.generate_random()
+
+        return render_template("mvmr.html", trips=mvmr.trips)
+
+    today = datetime.today().strftime("%m-%d")
+    return render_template("generate.html", today=today)
 
 
 if __name__ == "__main__":
