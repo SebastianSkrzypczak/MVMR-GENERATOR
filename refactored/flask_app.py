@@ -21,7 +21,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-destination_uow, refueling_uow = bootstrap()  # type: uow.AbstractUnitOfWork
+cars_uow, destination_uow, refueling_uow, trips_uow = (
+    bootstrap()
+)  # type: uow.AbstractUnitOfWork
 
 
 @app.route("/check_table/<string:table_name>", methods=["GET"])

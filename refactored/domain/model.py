@@ -11,8 +11,19 @@ class Item(ABC):
 
 
 @dataclass
+class Car(Item):
+
+    id: int
+    name: str
+    model: str
+    number_plate: str
+
+    def __str__(self) -> str:
+        return f"{self.id}\t{self.name}\t{self.model}\t{self.number_plate}"
+
+
+@dataclass
 class Destination(Item):
-    """Class representing one destination."""
 
     id: int
     name: str
@@ -25,11 +36,11 @@ class Destination(Item):
 
 @dataclass
 class Trip(Item):
-    """Class representing one trip."""
 
     id: int
     date: datetime
     destination: Destination
+    car: Car
     milage: float = 0.0
 
     def calculate_milage(self, previous_milage: float) -> None:
@@ -41,7 +52,6 @@ class Trip(Item):
 
 @dataclass
 class Refueling(Item):
-    """Class representing one refueling."""
 
     id: int
     date: datetime

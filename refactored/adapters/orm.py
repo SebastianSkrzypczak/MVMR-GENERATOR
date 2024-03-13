@@ -30,9 +30,19 @@ trips = Table(
     "trips",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("car_id", Integer, ForeignKey("cars.id")),
     Column("date", Date, nullable=False),
     Column("destination_id", Integer, ForeignKey("destinations.id")),
     Column("milage", Float),
+)
+
+cars = Table(
+    "cars",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("name", String(255)),
+    Column("model", String(255)),
+    Column("number_plate", String(16)),
 )
 
 refuelings = Table(
@@ -50,5 +60,6 @@ def start_mappers():
     destinations_mapper = mapper_registry.map_imperatively(
         model.Destination, destinations
     )
+    cars_mapper = mapper_registry.map_imperatively(model.Car, cars)
     trips_mapper = mapper_registry.map_imperatively(model.Trip, trips)
     refuelings_mapper = mapper_registry.map_imperatively(model.Refueling, refuelings)
