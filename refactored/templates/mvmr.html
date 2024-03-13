@@ -9,12 +9,17 @@
     <table border="1">
       <thead>
         <tr>
+          <th>CAR:</th>
+          <th>{{number_plate}}</th>
+        </tr>
+        <tr>
           <th>ID</th>
           <th>Date</th>
           <th>Destionation</th>
           <th>Milage</th>
         </tr>
       </thead>
+      <tr></tr>
       <tbody>
         {% for trip in trips %}
         <tr>

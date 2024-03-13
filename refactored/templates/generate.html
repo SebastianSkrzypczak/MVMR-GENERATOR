@@ -18,6 +18,14 @@
   <body>
     <h2>Generate new MVMR</h2>
     <form method="post">
+      <select id="car_id" name="car_id">
+        {%for car in cars%}
+        <option value="{{car.id}}">
+          {{ car.id }} - {{ car.brand }} - {{ car.model }} - {{ car.number_plate
+          }}
+        </option>
+        {%endfor%}
+      </select>
       <label for="month_year">MONTH:</label><br />
       <input
         type="month"

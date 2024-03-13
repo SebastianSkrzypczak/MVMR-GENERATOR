@@ -113,25 +113,65 @@ def add_refueling():
         date = request.form["date"]
         volume = request.form["volume"]
         destination_id = request.form["destination"]
-
+        car_id = request.form["car_id"]
         with refueling_uow:
             last_id = refueling_uow.get_last_id()
-            new_refueling = model.Refueling(last_id + 1, date, volume, destination_id)
+            new_refueling = model.Refueling(
+                last_id + 1, date, volume, destination_id, car_id
+            )
             refueling_uow.repository.add(new_refueling)
             refueling_uow.commit()
         return redirect("/refuelings")
 
     with destination_uow:
         destinations = destination_uow.repository.content
+    with cars_uow:
+        cars = cars_uow.repository.content
 
     today = datetime.today().strftime("%Y-&m-%d")
 
-    return render_template("add_refueling.html", destinations=destinations, today=today)
+    return render_template(
+        "add_refueling.html", destinations=destinations, today=today, cars=cars
+    )
+
+
+@app.route("/add_car", methods=["GET", "POST"])
+def add_car():
+    if request.method == "POST":
+        brand = request.form["brand"]
+        car_model = request.form["model"]
+        number_plate = request.form["number_plate"]
+
+        with cars_uow:
+            last_id = cars_uow.get_last_id()
+            new_car = model.Car(last_id + 1, brand, car_model, number_plate)
+            cars_uow.repository.add(new_car)
+            cars_uow.commit()
+        return redirect("/cars")
+
+    return render_template("add_car.html")
+
+
+@app.route("/cars", methods=["GET", "POST"])
+def cars():
+    if request.method == "POST":
+        cars_to_delete = request.form.getlist("delete")
+        with cars_uow:
+            for car_id in cars_to_delete:
+                ic(car_id)
+                cars_uow.repository.remove(int(car_id))
+            cars_uow.commit()
+        return redirect("/cars")
+
+    with cars_uow:
+        cars = cars_uow.repository.content
+        return render_template("/cars.html", cars=cars)
 
 
 @app.route("/generate", methods=["GET", "POST"])
 def generate():
     if request.method == "POST":
+        car_id = int(request.form["car_id"])
         year, month = map(int, request.form["month_year"].split("-"))
         current_milage = int(request.form["current_milage"])
         previous_milage = int(request.form["previous_milage"])
@@ -139,22 +179,21 @@ def generate():
             destinations = destination_uow.repository.content
         with refueling_uow:
             refuelings = refueling_uow.repository.content
+        with cars_uow:
+            car = cars_uow.repository.find_item(car_id)
+        number_plate = car.number_plate
         mvmr = logic.Mvmr(
-            destinations,
-            refuelings,
-            month,
-            year,
-            current_milage,
-            previous_milage,
+            destinations, refuelings, month, year, current_milage, previous_milage, car
         )
         mvmr.get_work_days_in_month()
         mvmr.add_refuelings_to_trips()
         mvmr.generate_random()
 
-        return render_template("mvmr.html", trips=mvmr.trips)
-
+        return render_template("mvmr.html", trips=mvmr.trips, number_plate=number_plate)
+    with cars_uow:
+        cars = cars_uow.repository.content
     today = datetime.today().strftime("%m-%d")
-    return render_template("generate.html", today=today)
+    return render_template("generate.html", today=today, cars=cars)
 
 
 if __name__ == "__main__":

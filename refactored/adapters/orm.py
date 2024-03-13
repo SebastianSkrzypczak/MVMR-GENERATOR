@@ -40,7 +40,7 @@ cars = Table(
     "cars",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("name", String(255)),
+    Column("brand", String(255)),
     Column("model", String(255)),
     Column("number_plate", String(16)),
 )
@@ -51,6 +51,7 @@ refuelings = Table(
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("date", Date),
     Column("volume", Float),
+    Column("car_id", Integer, ForeignKey("cars.id")),
     Column("destination_id", Integer, ForeignKey("destinations.id")),
 )
 

@@ -12,7 +12,7 @@ class AbstractRepository(ABC):
         self.item_type = type
         self.content: list[model.Item] = None
 
-    def _find_item(self, item_id: str) -> model.Item | None:
+    def find_item(self, item_id: str) -> model.Item | None:
         try:
             content_item = next(
                 content_item
@@ -52,7 +52,7 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     def remove(self, item_to_delete_id: int):
-        content_item = self._find_item(item_to_delete_id)
+        content_item = self.find_item(item_to_delete_id)
         if content_item:
             self.content.remove(content_item)
         else:

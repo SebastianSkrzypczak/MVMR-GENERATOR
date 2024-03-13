@@ -1,4 +1,4 @@
-<!-- add_refeeling.html -->
+<!-- add_refueling.html -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -6,6 +6,14 @@
   </head>
   <body>
     <h2>Add New Refueling</h2>
+    <select id="car_id" name="car_id">
+      {%for car in cars%}
+      <option value="{{car.id}}">
+        {{ car.id }} - {{ car.brand }} - {{ car.model }} - {{ car.number_plate
+        }}
+      </option>
+      {%endfor%}
+    </select>
     <form method="post">
       <label for="date">Date:</label><br />
       <input

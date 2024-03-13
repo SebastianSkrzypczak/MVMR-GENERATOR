@@ -27,8 +27,8 @@ class Mvmr:
         year: int,
         current_milage: int,
         previous_milage: int,
+        car_id: int,
         free_days: list[datetime.date] = None,
-        car: model.Car
     ) -> None:
         self.destinations = destinations
         self.refuelings = refuelings
@@ -39,13 +39,19 @@ class Mvmr:
         self.range = current_milage - previous_milage
         self.available_days = None
         self.trips = None
-        self.car = model.Car
+        self.car_id = car_id
 
     def add_trip(
         self, date: datetime, destination: model.Destination, milage: float = 0.0
     ):
         self.trips.append(
-            model.Trip(id=0, car=self.car, date=date, destination=destination, milage=milage)
+            model.Trip(
+                id=0,
+                car_id=self.car_id,
+                date=date,
+                destination=destination,
+                milage=milage,
+            )
         )
 
     def remove_days_from_available_days(self, trips: list[model.Trip]):
@@ -77,6 +83,7 @@ class Mvmr:
                     if destination.id == refueling.destination_id
                 ),
                 milage=None,
+                car_id=self.car_id,
             )
             for refueling in self.refuelings
             if refueling.date.month == self.month and refueling.date.year == self.year
