@@ -118,3 +118,40 @@ input[type="checkbox"] {
   transform: scale(1.5); /* Powiększenie checkboxa */
   margin: 0; /* Usunięcie marginesów */
 }
+
+
+.form-group {
+  margin-bottom: 20px; /* Dodatkowy margines na dole każdego pola formularza */
+}
+
+.form-group label {
+  display: block; /* Każda etykieta w nowej linii */
+  margin-bottom: 5px; /* Dodatkowy margines na dole etykiety */
+}
+
+.form-group input,
+.form-group select {
+  width: 100%; /* Szerokość pola formularza na 100% kontenera */
+  padding: 8px; /* Wypełnienie pola */
+  font-size: 16px; /* Rozmiar czcionki */
+  border: 1px solid #ccc; /* Ramka pola */
+  border-radius: 5px; /* Zaokrąglenie krawędzi pola */
+}
+
+.form-group input[type="number"] {
+  /* Dodatkowe style dla pól typu number */
+  width: calc(100% - 18px); /* Pomniejszenie szerokości o 18px dla strzałki zmiany wartości */
+}
+
+
+.form-group select {
+  /* Dodatkowe style dla pól typu select */
+  appearance: none; /* Usunięcie domyślnego wyglądu elementu */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #fff; /* Kolor tła */
+  background-image: url('path/to/arrow.svg'); /* Dodanie niestandardowej strzałki */
+  background-size: 12px; /* Rozmiar niestandardowej strzałki */
+  background-position: right 10px center; /* Pozycja niestandardowej strzałki */
+  background-repeat: no-repeat; /* Nie powtarzanie tła */
+}

@@ -6,7 +6,6 @@ from adapters import repository
 from domain import model
 from icecream import ic
 from datetime import datetime
-import os
 import config
 
 # import logging
@@ -115,7 +114,7 @@ def destinations():
 @app.route("/add_refueling", methods=["GET", "POST"])
 def add_refueling():
     if request.method == "POST":
-        date = request.form["date"]
+        date = datetime.strptime(request.form["date"], "%Y-%m-%d")
         volume = request.form["volume"]
         destination_id = request.form["destination"]
         car_id = request.form["car"]

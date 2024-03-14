@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -6,31 +7,38 @@
     <link rel="stylesheet" href="static/styles.css" />
   </head>
   <body>
-    <h1>Trips List</h1>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>CAR:</th>
-          <th>{{number_plate}}</th>
-        </tr>
-        <tr>
-          <th>ID</th>
-          <th>Date</th>
-          <th>Destionation</th>
-          <th>Milage</th>
-        </tr>
-      </thead>
-      <tr></tr>
-      <tbody>
-        {% for trip in trips %}
-        <tr>
-          <td>{{ trip.id }}</td>
-          <td>{{ trip.date }}</td>
-          <td>{{ trip.destination.name }}</td>
-          <td>{{ trip.milage }}</td>
-        </tr>
-        {%endfor%}
-      </tbody>
-    </table>
+    <div class="container">
+      <h1>Trips List</h1>
+      <div class="form-group">
+        <label for="car">CAR:</label>
+        <input
+          type="text"
+          id="car"
+          name="car"
+          value="{{ number_plate }}"
+          readonly
+        />
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Destination</th>
+            <th>Milage</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for trip in trips %}
+          <tr>
+            <td>{{ trip.id }}</td>
+            <td>{{ trip.date }}</td>
+            <td>{{ trip.destination.name }}</td>
+            <td>{{ trip.milage }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </body>
 </html>
