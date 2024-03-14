@@ -113,11 +113,15 @@ def add_refueling():
         date = request.form["date"]
         volume = request.form["volume"]
         destination_id = request.form["destination"]
-        car_id = request.form["car_id"]
+        car_id = request.form["car"]
         with refueling_uow:
             last_id = refueling_uow.get_last_id()
             new_refueling = model.Refueling(
-                last_id + 1, date, volume, destination_id, car_id
+                last_id + 1,
+                car_id,
+                date,
+                volume,
+                destination_id,
             )
             refueling_uow.repository.add(new_refueling)
             refueling_uow.commit()
