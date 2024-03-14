@@ -3,35 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="static/styles.css" />
     <title>Cars List</title>
   </head>
   <body>
-    <h1>Cars List</h1>
-    <form action="{{ url_for('cars') }}" method="post">
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Select</th>
-            <th>Brand</th>
-            <th>Model</th>
-            <th>Number Plate</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for car in cars %}
-          <tr>
-            <td>
-              <input type="checkbox" name="delete" value="{{car.id}}" />
-            </td>
-            <td>{{ car.brand }}</td>
-            <td>{{ car.model }}</td>
-            <td>{{ car.number_plate }}</td>
-          </tr>
-          {%endfor%}
-        </tbody>
-      </table>
-      <button type="submit">Delete Selected</button>
-    </form>
-    <button onclick="window.location.href = '/add_car';">Add car</button>
+    <div class="container">
+      <h1>Cars List</h1>
+      <form action="{{ url_for('cars') }}" method="post">
+        <table>
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Brand</th>
+              <th>Model</th>
+              <th>Number Plate</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for car in cars %}
+            <tr>
+              <td>
+                <input type="checkbox" name="delete" value="{{car.id}}" />
+              </td>
+              <td>{{ car.brand }}</td>
+              <td>{{ car.model }}</td>
+              <td>{{ car.number_plate }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="button-container">
+          <button type="submit">Delete Selected</button>
+        </div>
+      </form>
+      <div class="button-container">
+        <button onclick="window.location.href = '/add_car';">Add Car</button>
+      </div>
+    </div>
   </body>
 </html>

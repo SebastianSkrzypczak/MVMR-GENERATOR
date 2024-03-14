@@ -14,6 +14,7 @@
         }
       }
     </script>
+    <link rel="stylesheet" href="static/styles.css" />
   </head>
   <body>
     <h2>Generate new MVMR</h2>
@@ -55,19 +56,10 @@
         step="1"
         onblur="checkMilage()"
       /><br />
-      <!--
-      <label for="select_list">Destination:</label><br />
-      <select id="destination" name="destination">
-        {%for destination in destinations%}
-        <option value="{{destination.id}}">
-          {{ destination.id }} - {{ destination.name }} - {{
-          destination.location }} - {{ destination.distance }} km
-        </option>
-        {%endfor%}
-      </select>
-      <br /><br />
-    -->
       <input type="submit" value="Submit" />
     </form>
+    <button onclick="window.location.href = '/add_refueling';">
+      Add refueling
+    </button>
   </body>
 </html>

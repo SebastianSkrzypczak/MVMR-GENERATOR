@@ -181,3 +181,5 @@ venv/Scripts/deactivate.bat
 venv/Scripts/pip.exe
 venv/Scripts/pip3.exe
 venv/Scripts/pythonw.exe
+
+static/LOGO.png

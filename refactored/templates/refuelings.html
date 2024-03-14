@@ -4,38 +4,46 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Refuelings List</title>
+    <link rel="stylesheet" href="static/styles.css" />
   </head>
   <body>
-    <h1>Refuelings List</h1>
-    <form action="{{ url_for('refuelings') }}" method="post">
-      <table border="1">
-        <thead>
-          <tr>
-            <th>Select</th>
-            <th>Car ID</th>
-            <th>Date</th>
-            <th>Volume</th>
-            <th>Destination ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for refueling in refuelings %}
-          <tr>
-            <td>
-              <input type="checkbox" name="delete" value="{{ refueling.id }}" />
-            </td>
-            <td>{{refueling.car_id}}</td>
-            <td>{{ refueling.date }}</td>
-            <td>{{ refueling.volume }}</td>
-            <td>{{ refueling.destination_id }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-      <button type="submit">Delete Selected</button>
-    </form>
-    <button onclick="window.location.href = '/add_refueling';">
-      Add refueling
-    </button>
+    <div class="container">
+      <h1>Refuelings List</h1>
+      <form action="{{ url_for('refuelings') }}" method="post">
+        <table>
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Car ID</th>
+              <th>Date</th>
+              <th>Volume</th>
+              <th>Destination ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for refueling in refuelings %}
+            <tr>
+              <td>
+                <input
+                  type="checkbox"
+                  name="delete"
+                  value="{{ refueling.id }}"
+                />
+              </td>
+              <td>{{ refueling.car_id }}</td>
+              <td>{{ refueling.date }}</td>
+              <td>{{ refueling.volume }}</td>
+              <td>{{ refueling.destination_id }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      <div class="button-container button">
+          <button type="submit">Delete Selected</button>
+      </form>
+      <button onclick="window.location.href = '/add_refueling';">
+        Add refueling
+      </button>
+      </div>
   </body>
 </html>

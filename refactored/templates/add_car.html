@@ -1,24 +1,26 @@
-<!-- add_car.html -->
 <!DOCTYPE html>
 <html>
   <head>
     <title>Add Car</title>
+    <link rel="stylesheet" href="static/styles.css" />
   </head>
   <body>
-    <h2>Add New Car</h2>
-    <form method="post">
-      <label for="brand">Brand:</label><br />
-      <input type="string" id="brand" name="brand" /><br />
+    <div class="container">
+      <h2>Add New Car</h2>
+      <form method="post">
+        <label for="brand">Brand:</label>
+        <input type="text" id="brand" name="brand" /><br /><br />
 
-      <label for="model">Model:</label><br />
-      <input type="string" id="model" name="model" /><br />
+        <label for="model">Model:</label>
+        <input type="text" id="model" name="model" /><br /><br />
 
-      <label for="number_plate">Number Plate:</label><br />
-      <input type="string" id="number_plate" name="number_plate" /><br />
+        <label for="number_plate">Number Plate:</label>
+        <input type="text" id="number_plate" name="number_plate" /><br /><br />
 
-      <br /><br />
+        <br /><br />
 
-      <input type="submit" value="Submit" />
-    </form>
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
   </body>
 </html>

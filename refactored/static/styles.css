@@ -1,0 +1,120 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: block;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+  margin: 0 auto;
+}
+
+.body-index {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4f4f4;
+  margin: 0 auto;
+}
+
+.container {
+  text-align: center;
+  margin-top: 50px; /* Dodatkowy margines od góry */
+}
+
+.body-container {
+  text-align: center;
+  margin-top: 50vh; /* Ustawienie marginesu górnego na połowę wysokości widoku */
+  transform: translateY(-50%); /* Przesunięcie kontenera o połowę jego własnej wysokości w górę */
+}
+
+h1 {
+  color: #333;
+  margin-bottom: 20px;
+  margin-top: 100px;
+}
+
+form {
+  display: inline-block; /* Formularz jako blok inline */
+  text-align: left; /* Wyrównanie tekstu do lewej w formularzu */
+  margin-bottom: 20px; /* Dodatkowy margines na dole formularza */
+}
+
+label {
+  display: block; /* Każda etykieta w nowej linii */
+  margin-bottom: 5px; /* Dodatkowy margines na dole etykiety */
+}
+
+input[type="submit"] {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-right: 10px; /* Dodatkowy margines po prawej stronie */
+}
+
+input[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+.button-container {
+  text-align: center; /* Wyśrodkowanie przycisku */
+}
+
+.button-container button {
+  display: inline-block; /* Przycisk jako blok inline */
+  
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+  overflow-y: auto; /* Dodajemy przewijanie pionowe */
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+table th, table td {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+table th {
+  background-color: #f2f2f2;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+table tbody tr:hover {
+  background-color: #f2f2f2;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.5); /* Powiększenie checkboxa */
+  margin: 0; /* Usunięcie marginesów */
+}

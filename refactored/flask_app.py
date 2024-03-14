@@ -26,6 +26,11 @@ cars_uow, destination_uow, refueling_uow, trips_uow = (
 )  # type: uow.AbstractUnitOfWork
 
 
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
+
+
 @app.route("/check_table/<string:table_name>", methods=["GET"])
 def check_table(table_name):
     with destination_uow:
