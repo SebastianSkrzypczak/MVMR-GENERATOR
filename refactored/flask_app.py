@@ -204,5 +204,11 @@ def generate():
     return render_template("generate.html", today=today, cars=cars)
 
 
+@app.route("/mvmr", methods=["GET", "POST"])
+def mvmr():
+    if request.method == "POST":
+        pass
+
+
 if __name__ == "__main__":
     app.run(debug=True)
