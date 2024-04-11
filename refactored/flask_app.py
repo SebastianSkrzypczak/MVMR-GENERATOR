@@ -14,15 +14,14 @@ import config
 # logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
 app = Flask(__name__)
+db_config = config.LocalDbConfiguration
 
-app.config["SQLALCHEMY_DATABASE_URI"] = config.get_postgres_uri()
+app.config["SQLALCHEMY_DATABASE_URI"] = db_config.get_postgres_uri()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
 
-cars_uow, destination_uow, refueling_uow, trips_uow = (
-    bootstrap()
-)  # type: uow.AbstractUnitOfWork
+cars_uow, destination_uow, refueling_uow, trips_uow = bootstrap()
 
 
 @app.route("/", methods=["GET"])
@@ -176,6 +175,27 @@ def cars():
         return render_template("/cars.html", cars=cars)
 
 
+def mvmr_factory(car_id, year, month, current_milage, previous_milage):
+    with destination_uow:
+        destinations = destination_uow.repository.content
+    with refueling_uow:
+        refuelings = refueling_uow.repository.content
+    with cars_uow:
+        car = cars_uow.repository.find_item(car_id)
+
+    mvmr = logic.Mvmr(
+        destinations, refuelings, month, year, current_milage, previous_milage, car
+    )
+    return mvmr
+
+
+def find_car_number_plate(car_id):
+    with cars_uow:
+        car = cars_uow.repository.find_item(car_id)
+
+    return car.number_plate
+
+
 @app.route("/generate", methods=["GET", "POST"])
 def generate():
     if request.method == "POST":
@@ -183,21 +203,15 @@ def generate():
         year, month = map(int, request.form["month_year"].split("-"))
         current_milage = int(request.form["current_milage"])
         previous_milage = int(request.form["previous_milage"])
-        with destination_uow:
-            destinations = destination_uow.repository.content
-        with refueling_uow:
-            refuelings = refueling_uow.repository.content
-        with cars_uow:
-            car = cars_uow.repository.find_item(car_id)
-        number_plate = car.number_plate
-        mvmr = logic.Mvmr(
-            destinations, refuelings, month, year, current_milage, previous_milage, car
-        )
+
+        mvmr = mvmr_factory(car_id, year, month, current_milage, previous_milage)
+        number_plate = find_car_number_plate(car_id)
         mvmr.get_work_days_in_month()
         mvmr.add_refuelings_to_trips()
         mvmr.generate_random()
 
         return render_template("mvmr.html", trips=mvmr.trips, number_plate=number_plate)
+
     with cars_uow:
         cars = cars_uow.repository.content
     today = datetime.today().strftime("%m-%d")

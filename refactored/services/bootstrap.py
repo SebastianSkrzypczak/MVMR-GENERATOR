@@ -1,4 +1,4 @@
-from services import logic, uow
+from services import uow
 from domain import model
 from adapters import orm
 
