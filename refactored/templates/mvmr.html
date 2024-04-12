@@ -7,25 +7,28 @@
     <link rel="stylesheet" href="static/styles.css" />
   </head>
   <body>
-    <div class="container">
-      <h1>Trips List</h1>
-      <div class="form-group">
-        <label for="car">CAR:</label>
-        <input
-          type="text"
-          id="car"
-          name="car"
-          value="{{ number_plate }}"
-          readonly
-        />
-      </div>
-      <table>
+    <div class="vertical-align-middle">
+      <table border="1" class="fixed-width-table" style="margin-top: 50px">
         <thead>
           <tr>
-            <th>ID</th>
+            <td colspan="6" style="text-align: center">
+              Monthly Vehicle Milage Record
+            </td>
+            <td colspan="2" style="text-align: center">{{month}}/{{year}}</td>
+          </tr>
+          <tr>
+            <td colspan="4" style="text-align: center">Number Plate</td>
+            <td colspan="4" style="text-align: center">{{number_plate}}</td>
+          </tr>
+          <tr>
+            <th>#</th>
             <th>Date</th>
             <th>Destination</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Distance</th>
             <th>Milage</th>
+            <th>Signature</th>
           </tr>
         </thead>
         <tbody>
@@ -34,14 +37,20 @@
             <td>{{ trip.id }}</td>
             <td>{{ trip.date }}</td>
             <td>{{ trip.destination.name }}</td>
+            <td>Main</td>
+            <td>{{trip.destination.location}}</td>
+            <td>{{trip.destination.distance}}</td>
             <td>{{ trip.milage }}</td>
+            <td></td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
-      <div class="form-group">
-        <button onclick="window.location.href = '/generate';">Back</button>
-        <button onclick="window.location.reload();">Refresh</button>
+      <div class="container">
+        <div class="form-group">
+          <button onclick="window.location.href = '/generate';">Back</button>
+          <button onclick="window.location.reload();">Refresh</button>
+        </div>
       </div>
     </div>
   </body>

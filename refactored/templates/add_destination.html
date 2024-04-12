@@ -4,11 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Add Destination</title>
-    <link rel="stylesheet" href="static/styles.css" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
   </head>
   <body>
     <div class="container">
-      <h1>Add New Destination</h1>
+      <div class="button-container button">
+        <button
+          style="margin-bottom: 0px"
+          onclick="window.location.href = '/';"
+        >
+          HOME
+        </button>
+      </div>
+      <h1 style="margin-top: 20px">Add New Destination</h1>
       <form method="post">
         <div class="form-group">
           <label for="name">Name:</label>

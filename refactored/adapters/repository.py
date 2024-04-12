@@ -40,7 +40,7 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     def update(self, old_item_id: str, new_item: model.Item):
-        content_item = self._find_item(old_item_id)
+        content_item = self.find_item(old_item_id)
         if content_item:
             for attr_name in dir(content_item):
                 if not callable(
@@ -111,12 +111,20 @@ class SqlAlchemyRepository(AbstractRepository):
         self.session.add(item)
 
     def update(self, old_item_id: str, new_item: model.Item):
+        old_item = (
+            self.session.query(type(new_item)).filter_by(id=int(old_item_id)).first()
+        )
+        ic(old_item)
+        if old_item:
+            for attr_name in dir(old_item):
+                if not callable(attr_name) and not attr_name.startswith("_"):
+                    setattr(old_item, attr_name, getattr(new_item, attr_name))
+        else:
+            raise KeyError
+        ic(old_item)
         super().update(old_item_id, new_item)
 
     def remove(self, item_to_delete_id: int):
         content_item = self.session.get(self.item_type, item_to_delete_id)
         super().remove(item_to_delete_id)
         self.session.delete(content_item)
-        ic(self.session)
-        # self.session.commit()
-        # ic(self.session.query(self.item_type).all())

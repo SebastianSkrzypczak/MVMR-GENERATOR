@@ -15,6 +15,12 @@
         >
           Add refueling
         </button>
+        <button
+          style="margin-bottom: 0px"
+          onclick="window.location.href = '/';"
+        >
+          HOME
+        </button>
       </div>
       <h1 style="margin-top: 20px">Refuelings List</h1>
       <form action="{{ url_for('refuelings') }}" method="post">
@@ -26,6 +32,7 @@
               <th>Date</th>
               <th>Volume</th>
               <th>Destination ID</th>
+              <th>Edit</th>
             </tr>
           </thead>
           <tbody>
@@ -42,6 +49,11 @@
               <td>{{ refueling.date }}</td>
               <td>{{ refueling.volume }}</td>
               <td>{{ refueling.destination_id }}</td>
+              <td>
+                <button type="submit" name="edit" value="{{refueling.id}}">
+                  EDIT
+                </button>
+              </td>
             </tr>
             {% endfor %}
           </tbody>

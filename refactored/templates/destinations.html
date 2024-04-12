@@ -8,21 +8,30 @@
   </head>
   <body>
     <div class="container">
-      <div class = 'button-container button' >
-      <button style=" margin-bottom: 0px" onclick="window.location.href = '/add_destination';">
-        Add destination
-      </button>
+      <div class="button-container button">
+        <button
+          style="margin-bottom: 0px"
+          onclick="window.location.href = '/add_destination';"
+        >
+          Add destination
+        </button>
+        <button
+          style="margin-bottom: 0px"
+          onclick="window.location.href = '/';"
+        >
+          HOME
+        </button>
       </div>
-      <h1 style='margin-top: 20px'>Destinations List</h1>
+      <h1 style="margin-top: 20px">Destinations List</h1>
       <form action="{{ url_for('destinations') }}" method="post">
         <table>
           <thead>
-            <tr>  
+            <tr>
               <th>Select</th>
               <th>Name</th>
               <th>Location</th>
-              <!-- Poprawiono literówkę w "Location" -->
               <th>Distance</th>
+              <th>Edit</th>
             </tr>
           </thead>
           <tbody>
@@ -38,13 +47,18 @@
               <td>{{ destination.name }}</td>
               <td>{{ destination.location }}</td>
               <td>{{ destination.distance }}</td>
+              <td>
+                <button type="submit" name="edit" value="{{ destination.id }}">
+                  EDIT
+                </button>
+              </td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
-      </div>
-      <div class = 'button-container button'>
+        <div class="button-container button">
           <button type="submit">Delete Selected</button>
+        </div>
       </form>
     </div>
   </body>

@@ -114,11 +114,20 @@ table tbody tr:hover {
   background-color: #f2f2f2;
 }
 
+
 input[type="checkbox"] {
   transform: scale(1.5); /* Powiększenie checkboxa */
   margin: 0; /* Usunięcie marginesów */
 }
 
+.fixed-width-table {
+  width: 1024px;
+  margin: 0 auto;
+}
+
+.vertical-align-middle {
+  vertical-align: middle;
+}
 
 .form-group {
   margin-bottom: 20px; /* Dodatkowy margines na dole każdego pola formularza */

@@ -86,7 +86,9 @@ class Mvmr:
                 car_id=self.car_id,
             )
             for refueling in self.refuelings
-            if refueling.date.month == self.month and refueling.date.year == self.year
+            if refueling.date.month == self.month
+            and refueling.date.year == self.year
+            and refueling.destination_id is not None
         ]
         for refueling in refueling_trips:
             self.range -= refueling.destination.distance

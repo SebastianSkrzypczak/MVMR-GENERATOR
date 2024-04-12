@@ -9,7 +9,7 @@ from sqlalchemy import (
     ForeignKey,
     create_engine,
 )
-from sqlalchemy.orm import registry, relationship
+from sqlalchemy.orm import registry
 from config import get_postgres_uri
 from domain import model
 
@@ -30,9 +30,19 @@ trips = Table(
     "trips",
     metadata,
     Column("id", Integer, primary_key=True, autoincrement=True),
-    Column("car_id", Integer, ForeignKey("cars.id")),
+    Column(
+        "car_id",
+        Integer,
+        ForeignKey("cars.id", ondelete="CASCADE"),
+        nullable=True,
+    ),
     Column("date", Date, nullable=False),
-    Column("destination_id", Integer, ForeignKey("destinations.id")),
+    Column(
+        "destination_id",
+        Integer,
+        ForeignKey("destinations.id", ondelete="CASCADE"),
+        nullable=True,
+    ),
     Column("milage", Float),
 )
 
@@ -51,8 +61,18 @@ refuelings = Table(
     Column("id", Integer, primary_key=True, autoincrement=True),
     Column("date", Date),
     Column("volume", Float),
-    Column("car_id", Integer, ForeignKey("cars.id")),
-    Column("destination_id", Integer, ForeignKey("destinations.id")),
+    Column(
+        "car_id",
+        Integer,
+        ForeignKey("cars.id", ondelete="CASCADE"),
+        nullable=True,
+    ),
+    Column(
+        "destination_id",
+        Integer,
+        ForeignKey("destinations.id", ondelete="CASCADE"),
+        nullable=True,
+    ),
 )
 
 

@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, render_template, redirect
+from flask import Flask, jsonify, request, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from services.bootstrap import bootstrap
 from services import uow, logic
@@ -6,6 +6,7 @@ from adapters import repository
 from domain import model
 from icecream import ic
 from datetime import datetime
+import os
 import config
 
 # import logging
@@ -37,41 +38,45 @@ def check_table(table_name):
     return jsonify({"table_exists": table_exists})
 
 
-# @app.route("/load_data", methods=["GET"])
-# def load_data():
-#     file_path = os.path.join("files", "DESTINATIONS.txt")
-#     with open(file_path, "r") as file:
-#         destination_txt_repository = repository.TxtRepository(
-#             file, type=model.Destination
-#         )
-#         destination_txt_repository.read()
-#     items = destination_txt_repository.content
-#     with destination_uow:
-#         for item in items:
-#             destination_uow.repository.add(item)
-#         destination_uow.commit()
+@app.route("/load_data", methods=["GET"])
+def load_data():
+    file_path = os.path.join("files", "DESTINATIONS.txt")
+    with open(file_path, "r") as file:
+        destination_txt_repository = repository.TxtRepository(
+            file, type=model.Destination
+        )
+        destination_txt_repository.read()
+    items = destination_txt_repository.content
+    with destination_uow:
+        for item in items:
+            destination_uow.repository.add(item)
+        destination_uow.commit()
 
-#     file_path = os.path.join("files", "REFUELINGS.txt")
-#     with open(file_path, "r") as file:
-#         refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
-#         refueling_txt_repository.read()
-#     items = refueling_txt_repository.content
-#     with refueling_uow:
-#         for item in items:
-#             refueling_uow.repository.add(item)
-#         refueling_uow.commit()
-#     return jsonify(refueling_uow.repository.content)
+    file_path = os.path.join("files", "REFUELINGS.txt")
+    with open(file_path, "r") as file:
+        refueling_txt_repository = repository.TxtRepository(file, type=model.Refueling)
+        refueling_txt_repository.read()
+    items = refueling_txt_repository.content
+    with refueling_uow:
+        for item in items:
+            refueling_uow.repository.add(item)
+        refueling_uow.commit()
+    return jsonify(refueling_uow.repository.content)
 
 
 @app.route("/refuelings", methods=["GET", "POST"])
 def refuelings():
     if request.method == "POST":
-        refuelings_to_delete = request.form.getlist("delete")
-        with refueling_uow:
-            for destination_id in refuelings_to_delete:
-                refueling_uow.repository.remove(int(destination_id))
-            refueling_uow.commit()
-        return redirect("/refuelings")
+        if "edit" in request.form:
+            refueling_id = request.form["edit"]
+            return redirect(url_for("modify_refueling", refueling_id=refueling_id))
+        else:
+            refuelings_to_delete = request.form.getlist("delete")
+            with refueling_uow:
+                for destination_id in refuelings_to_delete:
+                    refueling_uow.repository.remove(int(destination_id))
+                refueling_uow.commit()
+            return redirect("/refuelings")
     elif request.method == "GET":
         with refueling_uow:
             refuelings = refueling_uow.repository.content
@@ -98,16 +103,40 @@ def add_destination():
 @app.route("/destinations", methods=["GET", "POST"])
 def destinations():
     if request.method == "POST":
-        destinations_to_delete = request.form.getlist("delete")
-        with destination_uow:
-            for destination_id in destinations_to_delete:
-                destination_uow.repository.remove(int(destination_id))
-            destination_uow.commit()
-        return redirect("/destinations")
+        if "edit" in request.form:
+            destination_id = request.form["edit"]
+            # TODO: print is not working in docker
+            return redirect(
+                url_for("modify_destination", destination_id=destination_id)
+            )
+        else:
+            destinations_to_delete = request.form.getlist("delete")
+            with destination_uow:
+                for destination_id in destinations_to_delete:
+                    destination_uow.repository.remove(int(destination_id))
+                destination_uow.commit()
+            return redirect("/destinations")
     elif request.method == "GET":
         with destination_uow:
             destinations = destination_uow.repository.content
             return render_template("destinations.html", destinations=destinations)
+
+
+@app.route("/modify_destination/<int:destination_id>", methods=["GET", "POST"])
+def modify_destination(destination_id):
+    if request.method == "POST":
+        name = request.form["name"]
+        location = request.form["location"]
+        distance = request.form["distance"]
+
+        with destination_uow:
+            new_destination = model.Destination(
+                destination_id, name, location, distance
+            )
+            destination_uow.repository.update(destination_id, new_destination)
+            destination_uow.commit()
+        return redirect("/destinations")
+    return render_template("add_destination.html")
 
 
 @app.route("/add_refueling", methods=["GET", "POST"])
@@ -129,17 +158,37 @@ def add_refueling():
             refueling_uow.repository.add(new_refueling)
             refueling_uow.commit()
         return redirect("/refuelings")
-
-    with destination_uow:
-        destinations = destination_uow.repository.content
     with cars_uow:
         cars = cars_uow.repository.content
+    with destination_uow:
+        destinations = destination_uow.repository.content
+    return render_template("add_refueling.html", cars=cars, destinations=destinations)
 
-    today = datetime.today().strftime("%Y-&m-%d")
 
-    return render_template(
-        "add_refueling.html", destinations=destinations, today=today, cars=cars
-    )
+@app.route("/modify_refueling/<int:refueling_id>", methods=["GET", "POST"])
+def modify_refueling(refueling_id):
+    if request.method == "POST":
+        date = datetime.strptime(request.form["date"], "%Y-%m-%d")
+        volume = request.form["volume"]
+        destination_id = request.form["destination"]
+        car_id = request.form["car"]
+
+        with refueling_uow:
+            new_refueling = model.Refueling(
+                refueling_id,
+                car_id,
+                date,
+                volume,
+                destination_id,
+            )
+            refueling_uow.repository.update(refueling_id, new_refueling)
+            refueling_uow.commit()
+        return redirect("/refuelings")
+    with cars_uow:
+        cars = cars_uow.repository.content
+    with destination_uow:
+        destinations = destination_uow.repository.content
+    return render_template("add_refueling.html", cars=cars, destinations=destinations)
 
 
 @app.route("/add_car", methods=["GET", "POST"])
@@ -210,7 +259,13 @@ def generate():
         mvmr.add_refuelings_to_trips()
         mvmr.generate_random()
 
-        return render_template("mvmr.html", trips=mvmr.trips, number_plate=number_plate)
+        return render_template(
+            "mvmr.html",
+            trips=mvmr.trips,
+            number_plate=number_plate,
+            year=year,
+            month=month,
+        )
 
     with cars_uow:
         cars = cars_uow.repository.content

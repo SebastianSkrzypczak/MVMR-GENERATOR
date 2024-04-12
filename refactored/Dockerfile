@@ -8,7 +8,7 @@ ENV WORKING_DIR=/app
 
 WORKDIR ${WORKING_DIR}
 
-COPY . ${WORKING_DIR}
+COPY requirements.txt ${WORKING_DIR}
 
 RUN groupadd ${USERNAME} && \
     useradd -g ${USERNAME} ${USERNAME}
@@ -29,7 +29,8 @@ USER ${USERNAME}
 
 ENV FLASK_APP=flask_app
 
+COPY . ${WORKING_DIR}
 
 EXPOSE 5000
 
-CMD [ "flask", "run", "--host=0.0.0.0", "--port=5000"]
+CMD [ "flask", "run", "--reload", "--host=0.0.0.0", "--port=5000"]
