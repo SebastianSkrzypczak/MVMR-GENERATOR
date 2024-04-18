@@ -7,15 +7,14 @@ from sqlalchemy import (
     Float,
     Date,
     ForeignKey,
-    create_engine,
 )
 from sqlalchemy.orm import registry
-from config import get_postgres_uri
+import config
 from domain import model
 
 metadata = MetaData()
 mapper_registry = registry(metadata=metadata)
-engine = create_engine(get_postgres_uri())
+engine = config.create_db_engine()
 
 destinations = Table(
     "destinations",

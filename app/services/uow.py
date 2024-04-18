@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from domain import model
 from sqlalchemy.orm import sessionmaker, session
 from icecream import ic
-from sqlalchemy import create_engine, inspect
+from sqlalchemy import inspect
 import config
 from sqlalchemy import func
 
@@ -69,10 +69,7 @@ class TxtUnitOfWork(AbstractUnitOfWork):
 
 
 DEFAULT_SESSION_FACTORY = sessionmaker(
-    bind=create_engine(
-        config.get_postgres_uri(),
-        isolation_level="REPEATABLE READ",
-    ),
+    bind=config.create_db_engine(),
     expire_on_commit=False,
 )
 

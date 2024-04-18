@@ -6,6 +6,8 @@ __pycache__/
 # C extensions
 *.so
 
+OUTPUT-FILE
+
 python.exe
 
 # Distribution / packaging

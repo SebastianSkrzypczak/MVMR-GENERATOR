@@ -17,9 +17,8 @@ import config
 app = Flask(__name__)
 db_config = config.LocalDbConfiguration
 
-app.config["SQLALCHEMY_DATABASE_URI"] = db_config.get_postgres_uri()
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
+app.config["SQLALCHEMY_DATABASE_URI"] = str(config.create_db_engine().url)
 db = SQLAlchemy(app)
 
 cars_uow, destination_uow, refueling_uow, trips_uow = bootstrap()
