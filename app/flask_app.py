@@ -126,7 +126,7 @@ def modify_destination(destination_id):
     if request.method == "POST":
         name = request.form["name"]
         location = request.form["location"]
-        distance = request.form["distance"]
+        distance = float(request.form["distance"])
 
         with destination_uow:
             new_destination = model.Destination(
