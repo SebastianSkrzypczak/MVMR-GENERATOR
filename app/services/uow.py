@@ -31,11 +31,11 @@ class AbstractUnitOfWork(ABC):
 
 
 class TxtUnitOfWork(AbstractUnitOfWork):
-    def __init__(self, item_type: model.Item):
-        self.item_type = item_type
+    def __init__(self, item_type: model.Item) -> None:
+        self.item_type: model.Item = item_type
         self.file_path = rf"refactored\files\{str(item_type.__name__).upper()}S.txt"
-        self.backup_content = None
-        self.repository = None
+        self.backup_content: list[model.Item] = None
+        self.repository: repository.AbstractRepository = None
 
     def __enter__(self):
         with open(self.file_path, "r", encoding="unicode") as file:
@@ -94,7 +94,6 @@ class SqlAlchemyUnitOfWork(AbstractUnitOfWork):
         else:
             self.repository.session = None
             self.repository.session = self.session
-            # self.repository.read()
 
         return super().__enter__()
 

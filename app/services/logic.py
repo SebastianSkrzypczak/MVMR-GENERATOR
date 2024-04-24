@@ -1,21 +1,9 @@
-from adapters import repository
 from domain import model
 from calendar import monthrange
 from datetime import datetime
-from icecream import ic
 from abc import ABC, abstractmethod
 import random
 from config import get_settings_for_random_generation
-
-
-class AbstractMvmr(ABC):
-    @abstractmethod
-    def add_trip(self):
-        pass
-
-    @abstractmethod
-    def generete_random(self):
-        pass
 
 
 class Mvmr:
@@ -72,16 +60,23 @@ class Mvmr:
         # TODO: HOLIDAYS API
         # TODO: FREE DAYS
 
+    def find_destination_by_id(self, destination_id) -> model.Destination:
+        try:
+            destination = next(
+                destination
+                for destination in self.destinations
+                if destination.id == destination_id
+            )
+        except StopIteration:
+            return StopIteration
+        return destination
+
     def add_refuelings_to_trips(self) -> list[model.Trip]:
         refueling_trips = [
             model.Trip(
                 id=None,
                 date=refueling.date,
-                destination=next(
-                    destination
-                    for destination in self.destinations
-                    if destination.id == refueling.destination_id
-                ),
+                destination=self.find_destination_by_id(refueling.id),
                 milage=None,
                 car_id=self.car_id,
             )
@@ -95,7 +90,7 @@ class Mvmr:
         self.remove_days_from_available_days(refueling_trips)
         self.trips = refueling_trips
 
-    def renumerate(self):
+    def renumerate(self) -> None:
         last_id = 0
         for trip in self.trips:
             trip.id = last_id + 1

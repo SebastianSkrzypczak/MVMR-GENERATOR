@@ -9,8 +9,8 @@ from sqlalchemy import (
     ForeignKey,
 )
 from sqlalchemy.orm import registry
-import config
 from domain import model
+import config
 
 metadata = MetaData()
 mapper_registry = registry(metadata=metadata)
