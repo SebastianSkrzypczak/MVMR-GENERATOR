@@ -38,6 +38,12 @@ def get_content_with_uow(uow: uow.AbstractUnitOfWork) -> list[model.Item]:
     return content
 
 
+def find_item_by_id_with_uow(uow: uow.AbstractUnitOfWork, id: int) -> model.Item:
+    with uow:
+        item = uow.repository.find_item(id)
+    return item
+
+
 def get_last_id_with_uow(uow: uow.AbstractUnitOfWork) -> int:
     with uow:
         last_id = uow.get_last_id()

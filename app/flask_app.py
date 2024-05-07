@@ -1,12 +1,10 @@
 from flask import Flask, jsonify, request, render_template, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from services.bootstrap import bootstrap
-from services import uow, logic
-from adapters import repository
+from services import uow, logic, manager
 from domain import model
 from icecream import ic
 from datetime import datetime
-from services import manager
 import config
 
 # import logging
@@ -27,14 +25,6 @@ cars_uow, destination_uow, refueling_uow, trips_uow = bootstrap()
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
-
-
-@app.route("/check_table/<string:table_name>", methods=["GET"])
-def check_table(table_name):
-    with destination_uow:
-        table_exists = destination_uow.table_exist(table_name)
-
-    return jsonify({"table_exists": table_exists})
 
 
 @app.route("/load_data", methods=["GET"])
@@ -97,6 +87,8 @@ def destinations():
 @app.route("/cars", methods=["GET", "POST"])
 def cars():
     ic(manager.get_content_with_uow(cars_uow))
+    with cars_uow:
+        ic(cars_uow.session.execute(text("SELECT * FROM cars;")).fetchall())
     return display(
         request=request,
         modification_function_name="modify_car",
@@ -110,6 +102,7 @@ def cars():
 def add_refueling():
     if request.method == "POST":
         date = datetime.strptime(request.form["date"], "%Y-%m-%d")
+        date = datetime.strftime(date, "%Y-%m-%d")
         volume = request.form["volume"]
         destination_id = request.form["destination"]
         car_id = request.form["car"]
@@ -125,6 +118,7 @@ def add_refueling():
 
     cars = manager.get_content_with_uow(cars_uow)
     destinations = manager.get_content_with_uow(destination_uow)
+
     return render_template("add_refueling.html", cars=cars, destinations=destinations)
 
 
@@ -183,21 +177,21 @@ def modify_refueling(id):
         destination_id = request.form["destination"]
         car_id = request.form["car"]
 
-        with refueling_uow:
-            new_refueling = model.Refueling(
-                id,
-                car_id,
-                date,
-                volume,
-                destination_id,
-            )
-            refueling_uow.repository.update(id, new_refueling)
-            refueling_uow.commit()
+        new_refueling = model.Refueling(
+            id,
+            car_id,
+            date,
+            volume,
+            destination_id,
+        )
+
+        manager.update_with_uow(refueling_uow, id, new_refueling)
+
         return redirect("/refuelings")
-    with cars_uow:
-        cars = cars_uow.repository.content
-    with destination_uow:
-        destinations = destination_uow.repository.content
+
+    cars = manager.get_content_with_uow(cars_uow)
+    destinations = manager.get_content_with_uow(destination_uow)
+
     return render_template("add_refueling.html", cars=cars, destinations=destinations)
 
 
@@ -218,12 +212,9 @@ def modify_car(id):
 
 
 def mvmr_factory(car_id, year, month, current_milage, previous_milage):
-    with destination_uow:
-        destinations = destination_uow.repository.content
-    with refueling_uow:
-        refuelings = refueling_uow.repository.content
-    with cars_uow:
-        car = cars_uow.repository.find_item(car_id)
+    destinations = manager.get_content_with_uow(destination_uow)
+    refuelings = manager.get_content_with_uow(refueling_uow)
+    car = manager.find_item_by_id_with_uow(cars_uow, car_id)
 
     mvmr = logic.Mvmr(
         destinations, refuelings, month, year, current_milage, previous_milage, car
@@ -260,16 +251,10 @@ def generate():
             month=month,
         )
 
-    with cars_uow:
-        cars = cars_uow.repository.content
+    cars = manager.get_content_with_uow(cars_uow)
     today = datetime.today().strftime("%m-%d")
+
     return render_template("generate.html", today=today, cars=cars)
-
-
-@app.route("/mvmr", methods=["GET", "POST"])
-def mvmr():
-    if request.method == "POST":
-        pass
 
 
 if __name__ == "__main__":

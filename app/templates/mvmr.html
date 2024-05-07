@@ -8,7 +8,12 @@
   </head>
   <body>
     <div class="vertical-align-middle">
-      <table border="1" class="fixed-width-table" style="margin-top: 50px">
+      <table
+        border="1"
+        class="fixed-width-table"
+        style="margin-top: 50px"
+        id="Table"
+      >
         <thead>
           <tr>
             <td colspan="6" style="text-align: center">
@@ -50,6 +55,22 @@
         <div class="form-group">
           <button onclick="window.location.href = '/generate';">Back</button>
           <button onclick="window.location.reload();">Refresh</button>
+          <button onclick="printTable()">Print Table</button>
+
+          <script>
+            function printTable() {
+              // Automatically select the table content
+              var table = document.getElementById("Table");
+              var range = document.createRange();
+              range.selectNodeContents(table);
+              var selection = window.getSelection();
+              selection.removeAllRanges();
+              selection.addRange(range);
+
+              // Open the printing window
+              window.print();
+            }
+          </script>
         </div>
       </div>
     </div>
