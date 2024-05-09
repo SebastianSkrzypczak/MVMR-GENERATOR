@@ -13,18 +13,12 @@ from flask_login import (
     logout_user,
     current_user,
 )
-
+from auth import auth
 import config
 
-# import logging
-
-# logging.basicConfig()
-# logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
-
 app = Flask(__name__)
-app.secret_key = config.get_app_secret_key()
+app.secret_key = "sadasoasdj111sad"  # config.get_app_secret_key()
 login_manager = LoginManager()
-db_config = config.LocalDbConfiguration
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_DATABASE_URI"] = str(config.create_db_engine().url)
@@ -32,24 +26,55 @@ db = SQLAlchemy(app)
 
 login_manager.init_app(app)
 
-cars_uow, destination_uow, refueling_uow, trips_uow = bootstrap()
+cars_uow, destination_uow, refueling_uow, trips_uow, users_uow = bootstrap()
 
 
-class User(UserMixin):
-    def __init__(self, id) -> None:
-        super().__init__()
-        self.id = id
+@login_manager.user_loader
+def load_user(user_id):
+    return manager.find_item_by_id_with_uow(users_uow, user_id)
 
 
-def get_user(user_id):
-    return User(user_id)
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+
+        user = manager.authenicate_user(users_uow, username, password)
+        if user:
+            login_user(user)
+            return redirect(url_for("/"))
+        return "Invalid credentials"
+    return render_template("login.html")
 
 
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        id = manager.get_last_id_with_uow(users_uow)
+
+        user = auth.User(id, username)
+        user.set_password(password)
+
+        manager.add_with_uow(users_uow, user)
+        return redirect(url_for("/login"))
+    return render_template("login.html")
+
+
+@login_manager.unauthorized_handler
+def unauthorized_callback():
+    return redirect(url_for("login"))
+
+
+@login_required
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
 
 
+@login_required
 @app.route("/load_data", methods=["GET"])
 def load_data():
     destinations_txt_repository = manager.load_data_from_txt_file(
@@ -85,6 +110,7 @@ def display(
         return render_template(template_name, content=content)
 
 
+@login_required
 @app.route("/refuelings", methods=["GET", "POST"])
 def refuelings():
     return display(
@@ -96,6 +122,7 @@ def refuelings():
     )
 
 
+@login_required
 @app.route("/destinations", methods=["GET", "POST"])
 def destinations():
     return display(
@@ -107,6 +134,7 @@ def destinations():
     )
 
 
+@login_required
 @app.route("/cars", methods=["GET", "POST"])
 def cars():
     ic(manager.get_content_with_uow(cars_uow))
@@ -121,6 +149,7 @@ def cars():
     )
 
 
+@login_required
 @app.route("/add_refueling", methods=["GET", "POST"])
 def add_refueling():
     if request.method == "POST":
@@ -145,6 +174,7 @@ def add_refueling():
     return render_template("add_refueling.html", cars=cars, destinations=destinations)
 
 
+@login_required
 @app.route("/add_destination", methods=["GET", "POST"])
 def add_destination():
     if request.method == "POST":
@@ -161,6 +191,7 @@ def add_destination():
     return render_template("add_destination.html")
 
 
+@login_required
 @app.route("/add_car", methods=["GET", "POST"])
 def add_car():
     if request.method == "POST":
@@ -177,6 +208,7 @@ def add_car():
     return render_template("add_car.html")
 
 
+@login_required
 @app.route("/modify_destination/<int:id>", methods=["GET", "POST"])
 def modify_destination(id):
     if request.method == "POST":
@@ -192,6 +224,7 @@ def modify_destination(id):
     return render_template("add_destination.html")
 
 
+@login_required
 @app.route("/modify_refueling/<int:id>", methods=["GET", "POST"])
 def modify_refueling(id):
     if request.method == "POST":
@@ -218,6 +251,7 @@ def modify_refueling(id):
     return render_template("add_refueling.html", cars=cars, destinations=destinations)
 
 
+@login_required
 @app.route("/modify_car/<int:id>", methods=["GET", "POST"])
 def modify_car(id):
     if request.method == "POST":
@@ -234,6 +268,7 @@ def modify_car(id):
     return render_template("add_car.html")
 
 
+@login_required
 def mvmr_factory(car_id, year, month, current_milage, previous_milage):
     destinations = manager.get_content_with_uow(destination_uow)
     refuelings = manager.get_content_with_uow(refueling_uow)
@@ -252,6 +287,7 @@ def find_car_number_plate(car_id):
     return car.number_plate
 
 
+@login_required
 @app.route("/generate", methods=["GET", "POST"])
 def generate():
     if request.method == "POST":

@@ -10,6 +10,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import registry
 from domain import model
+from auth import auth
 import config
 
 metadata = MetaData()
@@ -74,6 +75,14 @@ refuelings = Table(
     ),
 )
 
+users = Table(
+    "users",
+    metadata,
+    Column("id", Integer, primary_key=True, autoincrement=True),
+    Column("login", String(255)),
+    Column("password_hash", String(255)),
+)
+
 
 def start_mappers():
     metadata.create_all(engine)
@@ -83,3 +92,4 @@ def start_mappers():
     cars_mapper = mapper_registry.map_imperatively(model.Car, cars)
     trips_mapper = mapper_registry.map_imperatively(model.Trip, trips)
     refuelings_mapper = mapper_registry.map_imperatively(model.Refueling, refuelings)
+    users_mapper = mapper_registry.map_imperatively(auth.User, users)

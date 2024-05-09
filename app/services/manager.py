@@ -1,6 +1,7 @@
 from services import uow
 from domain import model
 from adapters import repository
+from auth import auth
 import os
 
 
@@ -61,3 +62,26 @@ def update_with_uow(uow: uow.AbstractUnitOfWork, id: int, item: model.Item) -> N
     with uow:
         uow.repository.update(id, item)
         uow.commit()
+
+
+def find_user_by_username(
+    uow: uow.AbstractUnitOfWork, username: str
+) -> auth.User | None:
+    with uow:
+        found_user = next(
+            user for user in uow.repository.content if username == user.username
+        )
+        if found_user:
+            return found_user
+        else:
+            return None
+
+
+def authenicate_user(
+    uow: uow.AbstractUnitOfWork, username: str, password: str
+) -> auth.User | None:
+    user: auth.User = find_user_by_username(uow, username)
+    if user.check_password(password):
+        return user
+    else:
+        return None
