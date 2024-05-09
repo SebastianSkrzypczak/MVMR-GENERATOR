@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, request, render_template, redirect, url_for
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from services.bootstrap import bootstrap
 from services import uow, logic, manager
 from domain import model
 from icecream import ic
 from datetime import datetime
+from flask_oauthlib.client import OAuth
 import config
 
 # import logging
@@ -13,6 +14,7 @@ import config
 # logging.getLogger("sqlalchemy.engine").setLevel(logging.DEBUG)
 
 app = Flask(__name__)
+app.secret_key = config.get_app_secret_key()
 db_config = config.LocalDbConfiguration
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -21,10 +23,62 @@ db = SQLAlchemy(app)
 
 cars_uow, destination_uow, refueling_uow, trips_uow = bootstrap()
 
+oauth = OAuth(app)
 
-@app.route("/", methods=["GET"])
+customer_key_venv = config.get_OAuth_customer_key()
+customer_secret_venv = config.get_OAuth_customer_secret()
+print(customer_key_venv, customer_secret_venv)
+
+google = oauth.remote_app(
+    "google",
+    consumer_key=customer_key_venv,
+    consumer_secret=customer_secret_venv,
+    request_token_params={
+        "scope": "email",
+    },
+    base_url="https://www.googleapis.com/oauth2/v1/",
+    request_token_url=None,
+    access_token_method="POST",
+    access_token_url="https://accounts.google.com/o/oauth2/token",
+    authorize_url="https://accounts.google.com/o/oauth2/auth",
+)
+
+
+@app.route("/")
 def index():
-    return render_template("index.html")
+    return 'Hello, please <a href="/login">login</a>'
+
+
+@app.route("/login")
+def login():
+    return google.authorize(callback=url_for("authorized", _external=True))
+
+
+@app.route("/logout")
+def logout():
+    session.pop("google_token", None)
+    return redirect(url_for("index"))
+
+
+@app.route("/login/authorized")
+def authorized():
+    resp = google.authorized_response()
+    if resp is None or resp.get("access_token") is None:
+        return "Access denied: reason={} error={}".format(
+            request.args["error_reason"], request.args["error_description"]
+        )
+    session["google_token"] = (resp["access_token"], "")
+    return redirect(url_for("index"))
+
+
+@google.tokengetter
+def get_google_oauth_token():
+    return session.get("google_token")
+
+
+# @app.route("/", methods=["GET"])
+# def index():
+#     return render_template("index.html")
 
 
 @app.route("/load_data", methods=["GET"])

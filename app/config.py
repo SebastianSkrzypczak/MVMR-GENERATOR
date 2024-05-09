@@ -58,9 +58,21 @@ class CloudDbConfiguration(AbstractDbConfiguration):
 
 
 def create_db_engine():
-    return LocalDbConfiguration.create_db_engine()
+    return CloudDbConfiguration.create_db_engine()
 
 
 def get_settings_for_random_generation():
     settings = {"max_difference": 10}
     return settings
+
+
+def get_app_secret_key():
+    return os.environ.get("APP_SECRET_KEY")
+
+
+def get_OAuth_customer_key():
+    return os.environ.get("CUSTOMER_KEY")
+
+
+def get_OAuth_customer_secret():
+    return os.environ.get("CUSTOMER_SECRET")
