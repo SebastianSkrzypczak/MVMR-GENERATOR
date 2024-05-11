@@ -13,6 +13,7 @@ class AbstractRepository(ABC):
         self.content: list[model.Item] = None
 
     def find_item(self, item_id: str) -> model.Item | None:
+        ic(item_id)
         try:
             content_item = next(
                 content_item

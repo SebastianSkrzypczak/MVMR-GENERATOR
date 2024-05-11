@@ -2,6 +2,7 @@ from services import uow
 from domain import model
 from adapters import repository
 from auth import auth
+from icecream import ic
 import os
 
 
@@ -54,7 +55,6 @@ def get_last_id_with_uow(uow: uow.AbstractUnitOfWork) -> int:
 def add_with_uow(uow: uow.AbstractUnitOfWork, item: model.Item) -> None:
     with uow:
         uow.repository.add(item)
-        print(uow.repository.content)
         uow.commit()
 
 
@@ -68,20 +68,22 @@ def find_user_by_username(
     uow: uow.AbstractUnitOfWork, username: str
 ) -> auth.User | None:
     with uow:
-        found_user = next(
-            user for user in uow.repository.content if username == user.username
+        users_match_generator = (
+            user for user in uow.repository.content if username == user.login
         )
+        try:
+            found_user = next(users_match_generator)
+        except StopIteration:
+            return None
         if found_user:
             return found_user
-        else:
-            return None
 
 
 def authenicate_user(
     uow: uow.AbstractUnitOfWork, username: str, password: str
 ) -> auth.User | None:
     user: auth.User = find_user_by_username(uow, username)
-    if user.check_password(password):
-        return user
+    if user:
+        return user.check_password(password)
     else:
         return None

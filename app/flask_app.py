@@ -31,7 +31,7 @@ cars_uow, destination_uow, refueling_uow, trips_uow, users_uow = bootstrap()
 
 @login_manager.user_loader
 def load_user(user_id):
-    return manager.find_item_by_id_with_uow(users_uow, user_id)
+    return manager.find_item_by_id_with_uow(users_uow, int(user_id))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -43,7 +43,7 @@ def login():
         user = manager.authenicate_user(users_uow, username, password)
         if user:
             login_user(user)
-            return redirect(url_for("/"))
+            return redirect(url_for("index"))
         return "Invalid credentials"
     return render_template("login.html")
 
@@ -59,7 +59,7 @@ def register():
         user.set_password(password)
 
         manager.add_with_uow(users_uow, user)
-        return redirect(url_for("/login"))
+        return redirect(url_for("login"))
     return render_template("login.html")
 
 
@@ -137,9 +137,6 @@ def destinations():
 @login_required
 @app.route("/cars", methods=["GET", "POST"])
 def cars():
-    ic(manager.get_content_with_uow(cars_uow))
-    with cars_uow:
-        ic(cars_uow.session.execute(text("SELECT * FROM cars;")).fetchall())
     return display(
         request=request,
         modification_function_name="modify_car",
