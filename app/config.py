@@ -58,7 +58,7 @@ class CloudDbConfiguration(AbstractDbConfiguration):
 
 
 def create_db_engine():
-    return LocalDbConfiguration.create_db_engine()
+    return CloudDbConfiguration.create_db_engine()
 
 
 def get_settings_for_random_generation():

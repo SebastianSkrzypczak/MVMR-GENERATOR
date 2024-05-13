@@ -164,3 +164,8 @@ input[type="checkbox"] {
   background-position: right 10px center; /* Pozycja niestandardowej strzałki */
   background-repeat: no-repeat; /* Nie powtarzanie tła */
 }
+
+.right-align {
+  display: grid;
+  grid-template-columns: auto 1fr; /* Pierwsza kolumna automatycznie dopasowuje się do zawartości, druga wypełnia dostępną przestrzeń */
+}
