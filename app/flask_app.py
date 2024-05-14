@@ -157,11 +157,10 @@ def cars():
 @login_required
 def add_refueling():
     if request.method == "POST":
-        date = datetime.strptime(request.form["date"], "%Y-%m-%d")
-        date = datetime.strftime(date, "%Y-%m-%d")
-        volume = request.form["volume"]
+        date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+        volume = float(request.form["volume"])
         destination_id = request.form["destination"]
-        car_id = request.form["car"]
+        car_id = int(request.form["car"])
 
         last_id = manager.get_last_id_with_uow(refueling_uow)
 
@@ -184,7 +183,7 @@ def add_destination():
     if request.method == "POST":
         name = request.form["name"]
         location = request.form["location"]
-        distance = request.form["distance"]
+        distance = float(request.form["distance"])
 
         last_id = manager.get_last_id_with_uow(destination_uow)
         new_destination = model.Destination(last_id + 1, name, location, distance)
@@ -232,10 +231,10 @@ def modify_destination(id):
 @login_required
 def modify_refueling(id):
     if request.method == "POST":
-        date = datetime.strptime(request.form["date"], "%Y-%m-%d")
-        volume = request.form["volume"]
-        destination_id = request.form["destination"]
-        car_id = request.form["car"]
+        date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+        volume = float(request.form["volume"])
+        destination_id = int(request.form["destination"])
+        car_id = int(request.form["car"])
 
         new_refueling = model.Refueling(
             id,
@@ -307,6 +306,7 @@ def generate():
 
         return render_template(
             "mvmr.html",
+            previous_milage=previous_milage,
             trips=mvmr.trips,
             number_plate=number_plate,
             year=year,

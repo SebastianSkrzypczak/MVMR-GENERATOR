@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Any
 
 
 class Item(ABC):

@@ -5,52 +5,61 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Trips List</title>
     <link rel="stylesheet" href="static/styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   </head>
   <body>
     <div class="vertical-align-middle">
-      <table
-        border="1"
-        class="fixed-width-table"
-        style="margin-top: 50px"
-        id="Table"
-      >
-        <thead>
-          <tr>
-            <td colspan="6" style="text-align: center">
-              Monthly Vehicle Milage Record
-            </td>
-            <td colspan="2" style="text-align: center">{{month}}/{{year}}</td>
-          </tr>
-          <tr>
-            <td colspan="4" style="text-align: center">Number Plate</td>
-            <td colspan="4" style="text-align: center">{{number_plate}}</td>
-          </tr>
-          <tr>
-            <th>#</th>
-            <th>Date</th>
-            <th>Destination</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Distance</th>
-            <th>Milage</th>
-            <th>Signature</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for trip in trips %}
-          <tr>
-            <td>{{ trip.id }}</td>
-            <td>{{ trip.date }}</td>
-            <td>{{ trip.destination.name }}</td>
-            <td>Main</td>
-            <td>{{trip.destination.location}}</td>
-            <td>{{trip.destination.distance}}</td>
-            <td>{{ trip.milage }}</td>
-            <td></td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+      <div id="printable-table">
+        <table
+          border="1"
+          class="fixed-width-table"
+          style="margin-top: 50px"
+          id="Table"
+        >
+          <thead>
+            <tr>
+              <td colspan="6" style="text-align: center">
+                Monthly Vehicle Milage Record
+              </td>
+              <td colspan="2" style="text-align: center">{{month}}/{{year}}</td>
+            </tr>
+            <tr>
+              <td colspan="4" style="text-align: center">Number Plate</td>
+              <td colspan="4" style="text-align: center">{{number_plate}}</td>
+            </tr>
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Destination</th>
+              <th>From</th>
+              <th>To</th>
+              <th>Distance</th>
+              <th>Milage</th>
+              <th>Signature</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="6" style="text-align: right">Previous Milage</td>
+              <td colspan="1" style="text-align: center">
+                {{previous_milage}}
+              </td>
+            </tr>
+            {% for trip in trips %}
+            <tr>
+              <td>{{ trip.id }}</td>
+              <td>{{ trip.date }}</td>
+              <td>{{ trip.destination.name }}</td>
+              <td>Main</td>
+              <td>{{trip.destination.location}}</td>
+              <td>{{trip.destination.distance}}</td>
+              <td>{{ trip.milage }}</td>
+              <td></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
       <div class="container">
         <div class="form-group">
           <button onclick="window.location.href = '/generate';">Back</button>
@@ -59,16 +68,31 @@
 
           <script>
             function printTable() {
-              // Automatically select the table content
-              var table = document.getElementById("Table");
-              var range = document.createRange();
-              range.selectNodeContents(table);
-              var selection = window.getSelection();
-              selection.removeAllRanges();
-              selection.addRange(range);
+              var doc = new jsPDF();
 
-              // Open the printing window
-              window.print();
+              // Pobierz zawartość tabeli
+              var table = document.getElementById("Table");
+
+              // Pobierz wszystkie wiersze tabeli
+              var rows = table.querySelectorAll("tr");
+
+              // Pętla przez wszystkie wiersze i dodaj zawartość do pliku PDF
+              var y = 10; // Początkowa pozycja Y
+              rows.forEach(function (row) {
+                var cells = row.querySelectorAll("td, th");
+                var x = 10; // Początkowa pozycja X
+                cells.forEach(function (cell) {
+                  // Dodaj zawartość komórki do pliku PDF
+                  doc.text(cell.innerText, x, y);
+                  // Przesuń pozycję X o szerokość komórki + 5 pikseli (odstęp)
+                  x += cell.offsetWidth + 5;
+                });
+                // Przesuń pozycję Y na następny wiersz
+                y += row.offsetHeight;
+              });
+
+              // Zapisz plik PDF
+              doc.save("table.pdf");
             }
           </script>
         </div>

@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from sqlalchemy import create_engine as sqlalchemy_engine
-from google.cloud.sql.connector import Connector, IPTypes
 import os
 
 
@@ -58,7 +57,7 @@ class CloudDbConfiguration(AbstractDbConfiguration):
 
 
 def create_db_engine():
-    return CloudDbConfiguration.create_db_engine()
+    return LocalDbConfiguration.create_db_engine()
 
 
 def get_settings_for_random_generation():
