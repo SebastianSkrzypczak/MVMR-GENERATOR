@@ -12,6 +12,7 @@ from flask_login import (
     current_user,
 )
 from auth import auth
+from icecream import ic
 import config
 
 app = Flask(__name__)
@@ -153,6 +154,18 @@ def cars():
     )
 
 
+@app.route("/trips", methods=["GET", "POST"])
+@login_required
+def trips():
+    return display(
+        request=request,
+        modification_function_name=None,
+        url_after_removal="/trips",
+        template_name="trips.html",
+        uow=trips_uow,
+    )
+
+
 @app.route("/add_refueling", methods=["GET", "POST"])
 @login_required
 def add_refueling():
@@ -209,6 +222,29 @@ def add_car():
         return redirect("/cars")
 
     return render_template("add_car.html")
+
+
+@app.route("/add_trip", methods=["GET", "POST"])
+@login_required
+def add_trip():
+    if request.method == "POST":
+        print(request.form)
+        date = datetime.strptime(request.form["date"], "%Y-%m-%d").date()
+        destination_id = int(request.form["destination"])
+        car_id = request.form["car"]
+        ic(car_id)
+        destination = manager.find_item_by_id_with_uow(destination_uow, destination_id)
+        last_id = manager.get_last_id_with_uow(trips_uow)
+        new_trip = model.Trip(last_id + 1, date, destination, car_id, milage=0)
+        ic(new_trip)
+
+        manager.add_with_uow(trips_uow, new_trip)
+
+        return redirect("/trips")
+
+    cars = manager.get_content_with_uow(cars_uow)
+    destinations = manager.get_content_with_uow(destination_uow)
+    return render_template("add_trip.html", cars=cars, destinations=destinations)
 
 
 @app.route("/modify_destination/<int:id>", methods=["GET", "POST"])

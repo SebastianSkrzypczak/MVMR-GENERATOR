@@ -1,7 +1,6 @@
 from domain import model
 from calendar import monthrange
 from datetime import datetime
-from abc import ABC, abstractmethod
 import random
 from config import get_settings_for_random_generation
 

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="static/styles.css" />
+    <title>Trips List</title>
+  </head>
+  <body>
+    <div class="container">
+      <div class="button-container button">
+        <button
+          style="margin-bottom: 0px"
+          onclick="window.location.href = '/add_trip';"
+        >
+          Add trip
+        </button>
+        <button
+          style="margin-bottom: 0px"
+          onclick="window.location.href = '/';"
+        >
+          HOME
+        </button>
+      </div>
+      <h1 style="margin-top: 20px">Trips List</h1>
+      <form action="{{ url_for('trips') }}" method="post">
+        <table>
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th>Car ID</th>
+              <th>Date</th>
+              <th>Destination</th>
+              <th>Edit</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for trip in content %}
+            <tr>
+              <td>
+                <input type="checkbox" name="delete" value="{{ trip.id }}" />
+              </td>
+              <td>{{ trip.car_id }}</td>
+              <td>{{ trip.date }}</td>
+              <td>{{ trip.destination.name }}</td>
+              <td>
+                <button type="submit" name="edit" value="{{trip.id}}">
+                  EDIT
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        <div class="button-container button">
+          <button type="submit">Delete Selected</button>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>

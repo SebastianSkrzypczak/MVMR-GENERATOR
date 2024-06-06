@@ -65,6 +65,22 @@
           <button onclick="window.location.href = '/generate';">Back</button>
           <button onclick="window.location.reload();">Refresh</button>
           <button onclick="printTable()">Print Table</button>
+          <form method="post" action="{{ url_for('add_trip') }}">
+            <input type="hidden" name="date" value="{{ trips[-1].date }}" />
+            <input
+              type="hidden"
+              name="destination"
+              value="{{ trips[-1].destination.id }}"
+            />
+            <input
+              type="hidden"
+              name="car"
+              value="{{
+            trips[-1].car_id.id}}"
+            />
+            <input type="hidden" name="milage" value="{{ trips[-1].milage }}" />
+            <button type="submit">Save Last Trip</button>
+          </form>
 
           <script>
             function printTable() {
