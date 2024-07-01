@@ -33,12 +33,12 @@ class AbstractUnitOfWork(ABC):
 class TxtUnitOfWork(AbstractUnitOfWork):
     def __init__(self, item_type: model.Item) -> None:
         self.item_type: model.Item = item_type
-        self.file_path = rf"refactored\files\{str(item_type.__name__).upper()}S.txt"
+        self.file_path = rf"files\{str(item_type.__name__).upper()}S.txt"
         self.backup_content: list[model.Item] = None
         self.repository: repository.AbstractRepository = None
 
     def __enter__(self):
-        with open(self.file_path, "r", encoding="unicode") as file:
+        with open(self.file_path, "r") as file:
             if not self.repository:
                 self.repository = repository.TxtRepository(file, self.item_type)
             self.repository.read()
@@ -48,7 +48,7 @@ class TxtUnitOfWork(AbstractUnitOfWork):
         new_content = []
         for item in self.repository.content:
             new_content.append(str(item))
-        with open(self.file_path, "w", encoding="unicode") as file:
+        with open(self.file_path, "w") as file:
             file.write(self.repository.header)
             file.writelines(line + "\n" for line in new_content)
 

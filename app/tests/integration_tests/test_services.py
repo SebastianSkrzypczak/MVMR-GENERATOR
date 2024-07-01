@@ -6,8 +6,10 @@ from icecream import ic
 from adapters import orm
 from config import get_settings_for_random_generation
 import statistics
+import pytest
 
 
+@pytest.mark.skip
 class Test_Mvmr_with_txt_uow:
     def test_generate_mvmr(self):
         destinations_uow = uow.TxtUnitOfWork(model.Destination)

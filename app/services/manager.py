@@ -37,6 +37,7 @@ def remove_many_with_uow(
 def get_content_with_uow(uow: uow.AbstractUnitOfWork) -> list[model.Item]:
     with uow:
         content = uow.repository.content
+        ic(content)
     return content
 
 

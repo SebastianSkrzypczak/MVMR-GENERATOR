@@ -58,4 +58,4 @@ class Refueling(Item):
     destination_id: int
 
     def __str__(self) -> str:
-        return f"{self.id}\t{self.date}\t{self.volume}\t{self.destination_id}"
+        return f"{self.id}\t{self.car_id}\t{self.date}\t{self.volume}\t{self.destination_id}"

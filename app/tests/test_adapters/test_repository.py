@@ -27,22 +27,24 @@ class Test_TxtRepository:
         assert result == correct_result
 
     def test_read_refuelings(self):
-        data = """id    date    volume  destination_id
-1\t2023-07-02\t50.0\t1
-2\t2023-07-10\t52.0\t1
-3\t2023-07-24\t48.0\t1"""
+        data = """id\tcar_id\tdate\tvolume\tdestination_id
+            1\t1\t2023-07-02\t50.0\t1
+            2\t1\t2023-07-10\t52.0\t7
+            3\t1\t2023-07-24\t48.0\t10"""
         correct_result = [
             str(
-                model.Refueling(1, datetime(year=2023, month=7, day=2).date(), 50.00, 1)
-            ),
-            str(
                 model.Refueling(
-                    2, datetime(year=2023, month=7, day=10).date(), 52.00, 1
+                    1, 1, datetime(year=2023, month=7, day=2).date(), 50.00, 1
                 )
             ),
             str(
                 model.Refueling(
-                    3, datetime(year=2023, month=7, day=24).date(), 48.00, 1
+                    2, 1, datetime(year=2023, month=7, day=10).date(), 52.00, 7
+                )
+            ),
+            str(
+                model.Refueling(
+                    3, 1, datetime(year=2023, month=7, day=24).date(), 48.00, 10
                 )
             ),
         ]
@@ -50,9 +52,8 @@ class Test_TxtRepository:
             io_object = StringIO(data)
             txt_repository = repository.TxtRepository(io_object, model.Refueling)
             txt_repository.read()
-            ic(txt_repository.content)
             result = list(map(str, txt_repository.content))
-        ic(result, correct_result)
+            ic(correct_result, result)
         assert result == correct_result
 
     def test_add_successfull(self):
@@ -77,7 +78,7 @@ class Test_TxtRepository:
         assert str(new_item) == str(txt_repository.content[1])
 
     def test_delete(self):
-        item_to_delete_id = model.Destination(1, "DEST-1", "LOCATION-1", 586.0)
+        item_to_delete_id = 1
         txt_repository = repository.TxtRepository(StringIO(""), model.Destination)
         txt_repository.content = [
             model.Destination(2, "DEST-2", "LOCATION-2", 434.0),
@@ -94,6 +95,7 @@ class Test_SqlRepository:
         # orm.start_mappers()
         engine = create_engine("sqlite:///:memory:")
         orm.metadata.create_all(engine)
+        orm.start_mappers()
 
         session_factory = sessionmaker(bind=engine)
 
@@ -106,8 +108,10 @@ class Test_SqlRepository:
             model.Destination(2, "DEST-2", "LOCATION-2", 434.0),
         ]
         for item in items:
+            ic(sql_repository.content)
             sql_repository.add(item)
 
+        ic(sql_repository)
         return sql_repository
 
     def test_add(self):

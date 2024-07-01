@@ -115,6 +115,7 @@ def display(
             return redirect(url_after_removal)
     elif request.method == "GET":
         content = manager.get_content_with_uow(uow)
+        ic(content)
         return render_template(template_name, content=content)
 
 

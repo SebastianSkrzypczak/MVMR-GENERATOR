@@ -42,7 +42,9 @@
               </td>
               <td>{{ trip.car_id }}</td>
               <td>{{ trip.date }}</td>
+              {% comment %}
               <td>{{ trip.destination.name }}</td>
+              {% endcomment %}
               <td>
                 <button type="submit" name="edit" value="{{trip.id}}">
                   EDIT

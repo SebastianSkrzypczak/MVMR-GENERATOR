@@ -29,7 +29,6 @@ class AbstractRepository(ABC):
 
     @abstractmethod
     def add(self, item: model.Item) -> None:
-        ic(self._check_if_item_in_content(item))
         if self.content is None:
             self.content = []
             self.content.append(item)
