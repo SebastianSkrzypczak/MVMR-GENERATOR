@@ -50,8 +50,8 @@ class Test_Mvmr_with_sql_uow:
         return destinations, refuelings
 
     def test_generate_mvmr(self):
-        orm.start_mappers()
         engine = create_engine("sqlite:///:memory:")
+        orm.start_mappers(engine)
         orm.metadata.create_all(engine)
 
         session_factory = sessionmaker(bind=engine)
@@ -75,12 +75,11 @@ class Test_Mvmr_with_sql_uow:
                     2023,
                     1000,
                     0,
+                    1,
                 )
         mvmr.get_work_days_in_month()
         mvmr.add_refuelings_to_trips()
         mvmr.generate_random()
-
-        ic([(trip.destination.name, trip.milage) for trip in mvmr.trips])
 
         assert 1 == 1
 
@@ -106,8 +105,8 @@ class Test_Mvmr_with_sql_uow:
 
                 for _ in range(0, 100):
                     mvmr = logic.Mvmr(
-                        destinations_uow.repository,
-                        refuelings_uow.repository,
+                        destinations_uow.repository.content,
+                        refuelings_uow.repository.content,
                         7,
                         2023,
                         1000,

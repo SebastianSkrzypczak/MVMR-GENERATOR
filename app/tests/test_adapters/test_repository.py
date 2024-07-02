@@ -4,7 +4,7 @@ from unittest.mock import patch, mock_open
 from io import StringIO
 from datetime import datetime
 from icecream import ic
-from sqlalchemy.orm import sessionmaker, session
+from sqlalchemy.orm import sessionmaker, clear_mappers, session
 from sqlalchemy import create_engine
 
 
@@ -91,11 +91,11 @@ class Test_TxtRepository:
 
 
 class Test_SqlRepository:
-    def initial_data(self):
-        # orm.start_mappers()
+
+    def initial_data(self, session):
         engine = create_engine("sqlite:///:memory:")
-        orm.metadata.create_all(engine)
-        orm.start_mappers()
+        orm.metadata.create_all(bind=engine)
+        orm.start_mappers(engine)
 
         session_factory = sessionmaker(bind=engine)
 
@@ -108,26 +108,24 @@ class Test_SqlRepository:
             model.Destination(2, "DEST-2", "LOCATION-2", 434.0),
         ]
         for item in items:
-            ic(sql_repository.content)
             sql_repository.add(item)
 
-        ic(sql_repository)
         return sql_repository
 
-    def test_add(self):
+    def test_add(self, session):
         items = [
             model.Destination(1, "DEST-1", "LOCATION-1", 586.0),
             model.Destination(2, "DEST-2", "LOCATION-2", 434.0),
         ]
 
-        sql_repository = self.initial_data()
+        sql_repository = self.initial_data(session)
         sql_repository.session.commit()
         sql_repository.session.close()
 
         assert sql_repository.session.query(model.Destination).all() == items
 
-    def test_update(self):
-        sql_repository = self.initial_data()
+    def test_update(self, session):
+        sql_repository = self.initial_data(session)
         new_item = model.Destination(1, "DEST-2", "LOCATION-2", 586.0)
 
         sql_repository.update(1, new_item)
@@ -138,9 +136,9 @@ class Test_SqlRepository:
             id=1
         ).first() == model.Destination(1, "DEST-2", "LOCATION-2", 586.0)
 
-    def test_delete(self):
-        sql_repository = self.initial_data()
-        item_to_delete = sql_repository.content[0]
+    def test_delete(self, session):
+        sql_repository = self.initial_data(session)
+        item_to_delete = sql_repository.content[0].id
 
         sql_repository.remove(item_to_delete)
 

@@ -16,6 +16,8 @@ def bootstrap(
 ) -> uow.AbstractUnitOfWork:
 
     if start_orm:
+        engine = orm.create_engine()
+        orm.metadata.create_all(bind=engine)
         orm.start_mappers()
 
     return (cars_uow, destination_uow, refueling_uow, trips_uow, users_uow)

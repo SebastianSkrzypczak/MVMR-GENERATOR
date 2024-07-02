@@ -8,9 +8,7 @@ import pytest
 class Test_TxtUnitOfWork:
     def initial_setup(self):
         destination_uow = uow.TxtUnitOfWork(model.Destination)
-        destination_uow.file_path = (
-            r"refactored\tests\test_services\TEST_DESTINATIONS.txt"
-        )
+        destination_uow.file_path = r"tests\test_services\TEST_DESTINATIONS.txt"
         correct_result = [
             str(model.Destination("1", "DEST-1", "LOCATION-1", 586.0)),
             str(model.Destination("4", "DEST-4", "LOCATION-4", 444.0)),

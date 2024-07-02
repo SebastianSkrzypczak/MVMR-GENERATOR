@@ -8,14 +8,19 @@ from sqlalchemy import (
     Date,
     ForeignKey,
 )
-from sqlalchemy.orm import registry
+from sqlalchemy.orm import registry, clear_mappers
 from domain import model
 from auth import auth
 import config
 
 metadata = MetaData()
 mapper_registry = registry(metadata=metadata)
-engine = config.create_db_engine()
+
+
+def create_engine():
+    engine = config.create_db_engine()
+    return engine
+
 
 destinations = Table(
     "destinations",
@@ -84,8 +89,9 @@ users = Table(
 )
 
 
-def start_mappers():
-    metadata.create_all(engine)
+def start_mappers(engine):
+    clear_mappers()
+
     destinations_mapper = mapper_registry.map_imperatively(
         model.Destination, destinations
     )
@@ -93,3 +99,11 @@ def start_mappers():
     trips_mapper = mapper_registry.map_imperatively(model.Trip, trips)
     refuelings_mapper = mapper_registry.map_imperatively(model.Refueling, refuelings)
     users_mapper = mapper_registry.map_imperatively(auth.User, users)
+
+
+def main():
+    pass
+
+
+if __name__ == "main":
+    main()
